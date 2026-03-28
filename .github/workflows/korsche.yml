@@ -1,0 +1,29 @@
+name: Korsche Sync
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Runs once a day at midnight
+  workflow_dispatch:  # Allows manual trigger
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      
+      - name: Run korsche_sync
+        run: python src/korsche_sync.py
+        env:
+          AWS_REGION: 'us-east-1'
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          UPLOADER_AWS_ACCESS_KEY: ${{ secrets.UPLOADER_AWS_ACCESS_KEY }}
+          UPLOADER_AWS_SECRET_KEY: ${{ secrets.UPLOADER_AWS_SECRET_KEY }}
+          UPLOADER_S3_BUCKET: ${{ secrets.UPLOADER_S3_BUCKET }}
