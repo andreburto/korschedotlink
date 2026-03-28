@@ -26,4 +26,4 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           UPLOADER_AWS_ACCESS_KEY: ${{ secrets.UPLOADER_AWS_ACCESS_KEY }}
           UPLOADER_AWS_SECRET_KEY: ${{ secrets.UPLOADER_AWS_SECRET_KEY }}
-          UPLOADER_S3_BUCKET: ${{ secrets.UPLOADER_S3_BUCKET }}
+          UPLOADER_S3_BUCKET: ${{ env.UPLOADER_S3_BUCKET }}

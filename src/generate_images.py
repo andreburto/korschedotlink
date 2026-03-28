@@ -13,7 +13,7 @@ from PIL import Image
 from prompt_maker import make_new_prompt
 
 KIRSCHE_DESCRIPTION = """
-Use this reference image: https://s3.us-east-1.amazonaws.com/korsche.mothersect.info/refs/kirsche_verstahl_sheet_01.jpg
+Use this reference image: https://cftest.mothersect.info/refs/kirsche_verstahl_sheet_01.jpg
 
 Kirsche is an anime fox girl with human facial features, including a small nose, large expressive eyes, and a friendly smile. She has fox ears on the top of her head that are covered in white fur that matches the fur on her tail and her hair. Her hair is long, white, and flowing. She has cherry earrings on the tip of her fox ears and cherry hair barrettes. She has an electric blue halo over one ear.
 
