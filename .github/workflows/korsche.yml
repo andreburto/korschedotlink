@@ -17,7 +17,7 @@ jobs:
           python-version: '3.11'
       
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r src/requirements.txt
       
       - name: Run korsche_sync
         run: python src/korsche_sync.py
