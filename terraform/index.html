@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Korsche.Link</title>
+</head>
+<body style="margin: auto; padding: 0px; text-align: center; background-color: #deedee;">
+  <div style="text-align: center; margin-top: 0px;">
+    <img src="https://korsche.link/kirsche/nanobanana_20260328_143359.png" id="kirscheImage" style="width: auto; height: auto;">
+  </div>
+  <script>
+    async function callApi() {
+      const response = await fetch(window.image_endpoint, {
+        method: "GET"
+      });
+      const data = await response.json();
+      if (response.ok) {
+        const files = data["files"];
+        if (files && files.length > 0) {
+          return files;
+        } else {
+          console.log("No files available in the response.");
+          return [];
+        }
+      } else {
+        console.log("API call failed:", response.statusText);
+        return [];
+      }
+    }
+
+    async function getImage() {
+      if (window.counter >= 100 || window.files.length === 0) {
+        console.log("Counter reached 100 or no files available, stopping API calls.");
+        window.files = await callApi();
+        window.counter = 0; // Reset counter after updating files
+      }
+
+      if (window.files.length === 0) {
+        console.log("No files available to display.");
+        return;
+      }
+
+      const randomIndex = Math.floor(Math.random() * window.files.length);
+      document.getElementById("kirscheImage").src = window.files[randomIndex];
+      console.log("Random file:", window.files[randomIndex]);
+
+      window.counter++;
+    }
+
+    // callApi();
+    window.image_endpoint = "https://dooo2ykm9j.execute-api.us-east-1.amazonaws.com/kirsche/hello";
+    window.counter = 999;
+    window.files = [];
+    setInterval(getImage, 30000); // Call the API every 30 seconds
+  </script>
+</body>
+</html>
