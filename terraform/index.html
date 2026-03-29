@@ -5,11 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Korsche.Link</title>
 </head>
-<body style="margin: auto; padding: 0px; text-align: center; background-color: #deedee;">
-  <div style="text-align: center; margin-top: 0px;">
-    <img src="https://korsche.link/kirsche/nanobanana_20260328_143359.png" id="kirscheImage" style="width: auto; height: auto;">
+<body style="margin: 0; padding: 0; text-align: center; background-color: #deedee; overflow: hidden;">
+  <div style="text-align: center; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh;">
+    <img id="kirscheImage" style="display: none;">
   </div>
   <script>
+    window.image_endpoint = "https://dooo2ykm9j.execute-api.us-east-1.amazonaws.com/kirsche/hello";
+    window.counter = 0;
+    window.files = [];
+
     async function callApi() {
       const response = await fetch(window.image_endpoint, {
         method: "GET"
@@ -29,11 +33,29 @@
       }
     }
 
+    function resizeImage(img) {
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const minDimension = Math.min(viewportHeight, viewportWidth);
+      
+      const naturalWidth = img.naturalWidth;
+      const naturalHeight = img.naturalHeight;
+      const maxImageDimension = Math.max(naturalWidth, naturalHeight);
+      
+      const ratio = minDimension / maxImageDimension;
+      
+      img.style.width = (naturalWidth * ratio) + "px";
+      img.style.height = (naturalHeight * ratio) + "px";
+      img.style.display = "block";
+      
+      console.log(`Image resized: ${img.style.width} x ${img.style.height}`);
+    }
+
     async function getImage() {
       if (window.counter >= 100 || window.files.length === 0) {
-        console.log("Counter reached 100 or no files available, stopping API calls.");
+        console.log("Fetching new file list from API...");
         window.files = await callApi();
-        window.counter = 0; // Reset counter after updating files
+        window.counter = 0;
       }
 
       if (window.files.length === 0) {
@@ -42,17 +64,40 @@
       }
 
       const randomIndex = Math.floor(Math.random() * window.files.length);
-      document.getElementById("kirscheImage").src = window.files[randomIndex];
-      console.log("Random file:", window.files[randomIndex]);
+      const imgElement = document.getElementById("kirscheImage");
+      
+      imgElement.onload = function() {
+        resizeImage(imgElement);
+      };
+      
+      imgElement.src = window.files[randomIndex];
+      console.log("Loading image:", window.files[randomIndex]);
 
       window.counter++;
     }
 
-    // callApi();
-    window.image_endpoint = "https://dooo2ykm9j.execute-api.us-east-1.amazonaws.com/kirsche/hello";
-    window.counter = 999;
-    window.files = [];
-    setInterval(getImage, 30000); // Call the API every 30 seconds
+    // Initialize: call API immediately and start the interval
+    (async function init() {
+      window.files = await callApi();
+      await getImage();
+      setInterval(getImage, 30000);
+    })();
+
+    // Handle window resize
+    window.addEventListener('resize', function() {
+      const imgElement = document.getElementById("kirscheImage");
+      if (imgElement.src) {
+        resizeImage(imgElement);
+      }
+    });
+
+    // Handle spacebar press to get new image
+    window.addEventListener('keydown', function(event) {
+      if (event.code === 'Space' || event.key === ' ') {
+        event.preventDefault(); // Prevent page scroll
+        getImage();
+      }
+    });
   </script>
 </body>
 </html>
