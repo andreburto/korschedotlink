@@ -117,6 +117,7 @@ def generate_prompt():
     Returns:
         str: The generated prompt string
     """
+    random.seed()
     outfit = random.choice(outfits_elements)
     location = random.choice(locations_elements)
     activity = random.choice(activities_elements)

@@ -11,7 +11,7 @@ import sys
 import boto3
 from botocore.exceptions import ClientError
 
-from ear_check import check_for_human_ear, fix_human_ear
+from image_cleanup import clean_image
 from generate_images import generate_image, KIRSCHE_DESCRIPTION
 from prompt_maker import make_new_prompt
 
@@ -94,18 +94,7 @@ def main():
         
         print(f"\n✓ Image generated successfully: {image_path}")
 
-        api_key = os.getenv("GEMINI_API_KEY")
-        has_human_ear = check_for_human_ear(image_path, api_key)
-        if has_human_ear:
-            print("\n✗ Human ear detected in the image. Attempting to fix...")
-            success = fix_human_ear(image_path, api_key)
-            if success:
-                print("\n✓ Image fixed successfully!")
-            else:
-                print("\n✗ Failed to fix the image. Proceeding with upload anyway.")
-        else:
-            print("\n✓ No human ear detected. Image is good to go!")
-        
+        clean_image(image_path)
         # Extract filename from path
         filename = os.path.basename(image_path)
         
