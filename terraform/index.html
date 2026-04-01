@@ -9,10 +9,20 @@
   <div style="text-align: center; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh;">
     <img id="kirscheImage" style="display: none;">
   </div>
+  
+  <!-- Top left plus button -->
+  <button id="menuBtn" style="position: fixed; top: 20px; left: 20px; font-size: 32px; width: 50px; height: 50px; cursor: pointer; background: white; border: 2px solid #333; border-radius: 5px;">+</button>
+  <div id="dropdown" style="display: none; position: fixed; top: 75px; left: 20px; background: white; border: 2px solid #333; border-radius: 5px; max-height: 400px; overflow-y: auto; min-width: 200px;"></div>
+  
+  <!-- Bottom navigation buttons -->
+  <button id="prevBtn" style="position: fixed; bottom: 20px; left: 20px; font-size: 32px; width: 50px; height: 50px; cursor: pointer; background: white; border: 2px solid #333; border-radius: 5px;">&lt;</button>
+  <button id="nextBtn" style="position: fixed; bottom: 20px; right: 20px; font-size: 32px; width: 50px; height: 50px; cursor: pointer; background: white; border: 2px solid #333; border-radius: 5px;">&gt;</button>
+  
   <script>
     window.image_endpoint = "https://dooo2ykm9j.execute-api.us-east-1.amazonaws.com/kirsche/hello";
     window.counter = 0;
     window.files = [];
+    window.currentIndex = -1;
 
     async function callApi() {
       const response = await fetch(window.image_endpoint, {
@@ -51,7 +61,7 @@
       console.log(`Image resized: ${img.style.width} x ${img.style.height}`);
     }
 
-    async function getImage() {
+    async function getImage(index = null) {
       if (window.counter >= 100 || window.files.length === 0) {
         console.log("Fetching new file list from API...");
         window.files = await callApi();
@@ -63,23 +73,65 @@
         return;
       }
 
-      const randomIndex = Math.floor(Math.random() * window.files.length);
+      let selectedIndex;
+      if (index !== null) {
+        selectedIndex = index;
+      } else {
+        selectedIndex = Math.floor(Math.random() * window.files.length);
+      }
+      
+      window.currentIndex = selectedIndex;
       const imgElement = document.getElementById("kirscheImage");
       
       imgElement.onload = function() {
         resizeImage(imgElement);
       };
       
-      imgElement.src = window.files[randomIndex];
-      console.log("Loading image:", window.files[randomIndex]);
+      imgElement.src = window.files[selectedIndex];
+      console.log("Loading image:", window.files[selectedIndex]);
 
       window.counter++;
+    }
+    
+    function showImage(index) {
+      if (window.files.length === 0) return;
+      window.currentIndex = index;
+      const imgElement = document.getElementById("kirscheImage");
+      imgElement.onload = function() {
+        resizeImage(imgElement);
+      };
+      imgElement.src = window.files[index];
+      console.log("Loading image:", window.files[index]);
+    }
+    
+    function populateDropdown() {
+      const dropdown = document.getElementById("dropdown");
+      dropdown.innerHTML = "";
+      window.files.forEach((file, index) => {
+        const item = document.createElement("div");
+        item.style.padding = "10px";
+        item.style.cursor = "pointer";
+        item.style.borderBottom = "1px solid #ddd";
+        item.textContent = file.split('/').pop();
+        item.addEventListener("click", () => {
+          showImage(index);
+          dropdown.style.display = "none";
+        });
+        item.addEventListener("mouseover", () => {
+          item.style.backgroundColor = "#f0f0f0";
+        });
+        item.addEventListener("mouseout", () => {
+          item.style.backgroundColor = "white";
+        });
+        dropdown.appendChild(item);
+      });
     }
 
     // Initialize: call API immediately and start the interval
     (async function init() {
       window.files = await callApi();
       await getImage();
+      populateDropdown();
       setInterval(getImage, 30000);
     })();
 
@@ -97,6 +149,31 @@
         event.preventDefault(); // Prevent page scroll
         getImage();
       }
+    });
+    
+    // Menu button toggle dropdown
+    document.getElementById("menuBtn").addEventListener("click", function() {
+      const dropdown = document.getElementById("dropdown");
+      if (dropdown.style.display === "none") {
+        populateDropdown();
+        dropdown.style.display = "block";
+      } else {
+        dropdown.style.display = "none";
+      }
+    });
+    
+    // Previous button
+    document.getElementById("prevBtn").addEventListener("click", function() {
+      if (window.files.length === 0) return;
+      const prevIndex = window.currentIndex <= 0 ? window.files.length - 1 : window.currentIndex - 1;
+      showImage(prevIndex);
+    });
+    
+    // Next button
+    document.getElementById("nextBtn").addEventListener("click", function() {
+      if (window.files.length === 0) return;
+      const nextIndex = window.currentIndex >= window.files.length - 1 ? 0 : window.currentIndex + 1;
+      showImage(nextIndex);
     });
   </script>
 </body>
