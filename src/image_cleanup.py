@@ -28,7 +28,7 @@ Use this reference image: https://cftest.mothersect.info/refs/kirsche_verstahl_s
 
 Is there anything unusual or odd about the image that looks out of place or inconsistent with the reference image? Focus on the character, ignore clothing, accessories, fox ears, and tail.
 
-Look for extra limbs, extra hangs, mismatched feet, or anything that does not align with the reference image.
+Look for extra limbs, extra hangs, mismatched feet, clipped object, or anything that does not align with the reference image.
 
 Answer with plain text what is out of place or looks odd in the image. If nothing looks out of place, answer with one word in lower case, "none".
 """.replace("\r", "").replace("\n", " ").strip()
@@ -228,7 +228,7 @@ def clean_image(image_path=None):
     if not fur_color_matches:
         fix_prompt_parts.append("Make the color of Kirsche's hair white. Make the fur on her ears and tail white. No red or brown hair should be visible.")
     if oddity_found:
-        fix_prompt_parts.append(f"Fix the following oddities in the image: {oddity_found}. ")
+        fix_prompt_parts.append(f"Fix the following in the image: {oddity_found}. ")
     
     if fix_prompt_parts:
         fix_prompt_parts = ["Adjust the attached image of Kirsche with the following fixes:"] + fix_prompt_parts

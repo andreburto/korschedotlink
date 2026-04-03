@@ -94,7 +94,17 @@ def main():
         
         print(f"\n✓ Image generated successfully: {image_path}")
 
-        clean_image(image_path)
+        # Attempt to clean the image up to 2 times
+        is_not_clean = 1
+        for _ in range(2):
+            is_not_clean = clean_image(image_path)
+            if not is_not_clean:
+                break
+
+        if is_not_clean:
+            print("\n✗ Error: Failed to clean image after 3 attempts")
+            return 1
+
         # Extract filename from path
         filename = os.path.basename(image_path)
         
