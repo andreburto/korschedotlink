@@ -22,7 +22,7 @@ from botocore.exceptions import ClientError
 from datetime import datetime
 from google import genai
 from PIL import Image
-
+from time import sleep
 
 # ==============================================================================
 # Constants and Configuration
@@ -862,6 +862,7 @@ def main():
         for val_count in range(3):
             print(f"Validation attempt {val_count + 1}")
             fix_response = validate_image(image_path, gemini_api_key)
+            sleep(2)  # Short delay between validation attempts
             if fix_response:
                 if val_count > 1:
                     print("\n✗ Error: Image still has issues after 3 validation attempts")
@@ -871,6 +872,7 @@ def main():
                     cleanup_prompt = f"The previous fixes were not sufficient. Try again: {cleanup_prompt}"
                     print(f"Sending prompt to fix image again:\n{cleanup_prompt}")
                 clean_image(image_path, gemini_api_key, cleanup_prompt)
+                sleep(2)  # Short delay after cleaning attempt
                 continue
             break
         print(DIVIDER)
