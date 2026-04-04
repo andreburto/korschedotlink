@@ -562,6 +562,106 @@ def clean_image(image_path=None):
 
 
 # ==============================================================================
+# Favicon Generation Functions
+# ==============================================================================
+def favico(kirsche_description: str, output_dir: str = "images"):
+    """
+    Generate a 64x64 favicon icon of Kirsche and upload it to S3.
+    
+    Args:
+        kirsche_description: The Kirsche character description template
+        output_dir: Directory to save the generated favicon
+    
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    # Load environment variables
+    api_key = os.getenv("GEMINI_API_KEY")
+    aws_access_key = os.getenv("UPLOADER_AWS_ACCESS_KEY")
+    aws_secret_key = os.getenv("UPLOADER_AWS_SECRET_KEY")
+    s3_bucket = os.getenv("UPLOADER_S3_BUCKET")
+    
+    # Validate environment variables
+    if not all([api_key, aws_access_key, aws_secret_key, s3_bucket]):
+        print("✗ Error: Missing required environment variables")
+        return False
+    
+    # Initialize the Gemini client
+    client = genai.Client(api_key=api_key)
+    
+    # Create a simplified prompt for favicon (focus on face/head)
+    favicon_prompt = kirsche_description.format(
+        "Draw a centered portrait icon of Kirsche's face and upper body, "
+        "suitable for a small 64x64 pixel favicon. Simple, clean style with "
+        "good contrast and clear features. Her face should be clearly visible "
+        "with a cute and warm expression."
+    )
+    
+    print("=" * 60)
+    print("Generating Kirsche Favicon (64x64)")
+    print("=" * 60 + "\n")
+    
+    try:
+        # Generate the image using Gemini
+        response = client.models.generate_content(
+            model=os.getenv("GEMINI_IMAGE_MODEL", "gemini-2.5-flash-image"),
+            contents=favicon_prompt
+        )
+        
+        # Create output directory if it doesn't exist
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Extract and process the generated image
+        if response.candidates and response.candidates[0].content.parts:
+            for part in response.candidates[0].content.parts:
+                if hasattr(part, 'inline_data') and part.inline_data:
+                    image_data = part.inline_data.data
+                    
+                    # Open image with Pillow
+                    image = Image.open(io.BytesIO(image_data))
+                    
+                    # Resize to 64x64
+                    favicon_image = image.resize((64, 64), Image.Resampling.LANCZOS)
+                    
+                    # Save as ICO
+                    ico_filename = "kirsche_favicon.ico"
+                    ico_path = os.path.join(output_dir, ico_filename)
+                    favicon_image.save(ico_path, format="ICO", sizes=[(64, 64)])
+                    print(f"✓ ICO favicon saved to: {ico_path}")
+                    
+                    # Upload to S3
+                    s3_key = f"kirsche/{ico_filename}"
+                    
+                    print("\n" + "=" * 60)
+                    print("Uploading favicon to S3...")
+                    print("=" * 60 + "\n")
+                    
+                    success = upload_to_s3(
+                        ico_path,
+                        s3_bucket,
+                        s3_key,
+                        aws_access_key,
+                        aws_secret_key
+                    )
+                    
+                    if success:
+                        print("\n" + "=" * 60)
+                        print("✓ Favicon generation and upload completed!")
+                        print("=" * 60)
+                        return True
+                    else:
+                        print("\n✗ Upload failed")
+                        return False
+        
+        print("✗ No favicon was generated")
+        return False
+        
+    except Exception as e:
+        print(f"✗ Error: {e}")
+        return False
+
+
+# ==============================================================================
 # S3 Upload Functions
 # ==============================================================================
 def upload_to_s3(local_file_path, bucket_name, s3_key, aws_access_key, aws_secret_key):
@@ -586,6 +686,11 @@ def upload_to_s3(local_file_path, bucket_name, s3_key, aws_access_key, aws_secre
             aws_secret_access_key=aws_secret_key
         )
         
+        # Determine content type based on file extension
+        content_type = 'image/png'
+        if local_file_path.endswith('.ico'):
+            content_type = 'image/x-icon'
+        
         # Upload the file
         print(f"Uploading {local_file_path} to s3://{bucket_name}/{s3_key}")
         s3_client.upload_file(
@@ -593,7 +698,7 @@ def upload_to_s3(local_file_path, bucket_name, s3_key, aws_access_key, aws_secre
             bucket_name,
             s3_key,
             ExtraArgs={
-                'ContentType': 'image/png',
+                'ContentType': content_type,
                 'ACL': 'public-read'
             }
         )
@@ -631,6 +736,13 @@ def main():
                 image_path = generate_image(KIRSCHE_DESCRIPTION.format(make_new_prompt()))
                 print(f"Success! Image generated and saved to: {image_path}")
                 return 0
+            except Exception as e:
+                print(f"Error: {e}")
+                return 1
+        elif sys.argv[1] == "favicon":
+            try:
+                success = favico(KIRSCHE_DESCRIPTION)
+                return 0 if success else 1
             except Exception as e:
                 print(f"Error: {e}")
                 return 1
