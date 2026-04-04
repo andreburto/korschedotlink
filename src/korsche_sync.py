@@ -564,7 +564,6 @@ def clean_image(image_path=None):
 # ==============================================================================
 # S3 Upload Functions
 # ==============================================================================
-
 def upload_to_s3(local_file_path, bucket_name, s3_key, aws_access_key, aws_secret_key):
     """
     Upload a file to an S3 bucket.
@@ -616,44 +615,13 @@ def upload_to_s3(local_file_path, bucket_name, s3_key, aws_access_key, aws_secre
 
 
 # ==============================================================================
-# Utility Functions
-# ==============================================================================
-
-def list_models():
-    """List available Gemini models."""
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        print("Error: GEMINI_API_KEY not set")
-        return 1
-
-    client = genai.Client(api_key=api_key)
-
-    print("Available models:")
-    print("=" * 60)
-
-    try:
-        models = client.models.list()
-        for model in models:
-            print(f"- {model.name}")
-            if hasattr(model, 'supported_generation_methods'):
-                print(f"  Methods: {', '.join(model.supported_generation_methods)}")
-        return 0
-    except Exception as e:
-        print(f"Error listing models: {e}")
-        return 1
-
-
-# ==============================================================================
 # Main Orchestration
 # ==============================================================================
-
 def main():
     """Main function to generate image and upload to S3."""
     # Check for special commands
     if len(sys.argv) > 1:
-        if sys.argv[1] == "list-models":
-            return list_models()
-        elif sys.argv[1] == "clean":
+        if sys.argv[1] == "clean":
             if len(sys.argv) < 3:
                 print("Usage: python korsche_sync.py clean <image_path>")
                 return 1
