@@ -10,7 +10,6 @@
 6. Use list comprehensions for creating lists when appropriate.
 7. Use DRY (Don't Repeat Yourself) principles to avoid code duplication.
 8. Follow PEP 8 style guidelines for Python code.
-9. All files go in src/ directory
 
 ## .tf files
 

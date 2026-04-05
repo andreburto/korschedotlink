@@ -1,6 +1,8 @@
 #!/bin/bash
 set -euox pipefail
 
+terraform apply -auto-approve
+
 APIGW_ARN=$(aws ssm get-parameter --name "/korsche/apigw_arn" --query "Parameter.Value" --output text)
 
 STAGE_NAME=$(aws ssm get-parameter --name "/korsche/apigw_stage_name" --query "Parameter.Value" --output text)

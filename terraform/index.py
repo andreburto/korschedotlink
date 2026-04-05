@@ -14,7 +14,9 @@ def list_s3_files(bucket_name, prefix):
     response = s3.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
     files = []
     if 'Contents' in response:
-        files = [f"/{obj['Key']}" for obj in response['Contents'] if obj['Key'] != prefix]
+        files = [
+            f"/{obj['Key']}" for obj in response['Contents'] 
+            if obj['Key'] != prefix and not obj['Key'].lower().endswith('ico')]
     return files
 
 
