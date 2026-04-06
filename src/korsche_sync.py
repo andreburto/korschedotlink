@@ -167,6 +167,8 @@ emotions_elements = [
     "mysterious"
 ]
 
+DEFAULT_GEMINI_PROMPT_MODEL = "gemini-2.5-flash"
+DEFAULT_GEMINI_IMAGE_MODEL = "gemini-2.5-flash-image"
 DIVIDER = "=" * 60
 
 
@@ -218,6 +220,7 @@ def enhance_prompt_with_gemini(prompt, model, api_key):
     enhancement_instruction = (
         f"You are a creative prompt enhancer. Take the following image generation prompt "
         f"and make it more creative, detailed, and vivid while keeping it PG-rated. "
+        f"Kirsche only has fox ears with white fur that matches her hair and tail. "
         f"Maintain the core structure and elements but add artistic details, atmosphere, "
         f"lighting, composition, and style elements. Return ONLY the enhanced prompt, "
         f"nothing else.\n\nOriginal prompt: {prompt}"
@@ -241,7 +244,7 @@ def enhance_prompt_with_gemini(prompt, model, api_key):
 def make_new_prompt():
     """Generate, enhance, and return a new prompt."""
     # Setup Gemini model and API key
-    model = os.getenv("GEMINI_PROMPT_MODEL", "gemini-2.5-flash")
+    model = os.getenv("GEMINI_PROMPT_MODEL", DEFAULT_GEMINI_PROMPT_MODEL)
     api_key = os.getenv("GEMINI_API_KEY")
     
     # Generate the base prompt
@@ -285,7 +288,7 @@ def generate_image(prompt: str, save_file: str = "images", api_key: str = None) 
     
     # Generate the image using Nano Banana model
     response = client.models.generate_content(
-        model=os.getenv("GEMINI_IMAGE_MODEL", "gemini-2.5-flash-image"),
+        model=os.getenv("GEMINI_IMAGE_MODEL", DEFAULT_GEMINI_IMAGE_MODEL),
         contents=prompt
     )
           
@@ -332,7 +335,7 @@ def send_to_gemini(image_path: str, api_key: str, prompt: str):
         image_data = f.read()
     
     response = client.models.generate_content(
-        model="gemini-2.5-flash-image",
+        model=os.getenv("GEMINI_IMAGE_MODEL", DEFAULT_GEMINI_IMAGE_MODEL),
         contents=[
             prompt, 
             types.Part.from_bytes(data=image_data, mime_type="image/png")])
@@ -621,10 +624,15 @@ def main():
             if len(sys.argv) < 3:
                 print("Usage: python korsche_sync.py prompt <optional_prompt>")
                 return 1
-            new_prompt = ' '.join(sys.argv[2:])
-            print(f"Generated Prompt:\n{new_prompt}")
             save_file = f"images/{generate_filename()}"
-            generate_image(prompt=KIRSCHE_DESCRIPTION.format(new_prompt), save_file=save_file, api_key=gemini_api_key)
+            enhanced_prompt = enhance_prompt_with_gemini(
+                ' '.join(sys.argv[2:]), 
+                model=os.getenv("GEMINI_PROMPT_MODEL", DEFAULT_GEMINI_PROMPT_MODEL), 
+                api_key=gemini_api_key)
+            generate_image(
+                prompt=KIRSCHE_DESCRIPTION.format(enhanced_prompt),
+                save_file=save_file,
+                api_key=gemini_api_key)
             return 0
         elif sys.argv[1] == "validate":
             if len(sys.argv) < 3:
