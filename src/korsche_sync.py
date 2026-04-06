@@ -617,7 +617,16 @@ def main():
     
     # Check for special commands
     if len(sys.argv) > 1:
-        if sys.argv[1] == "validate":
+        if sys.argv[1] == "prompt":
+            if len(sys.argv) < 3:
+                print("Usage: python korsche_sync.py prompt <optional_prompt>")
+                return 1
+            new_prompt = ' '.join(sys.argv[2:])
+            print(f"Generated Prompt:\n{new_prompt}")
+            save_file = f"images/{generate_filename()}"
+            generate_image(prompt=KIRSCHE_DESCRIPTION.format(new_prompt), save_file=save_file, api_key=gemini_api_key)
+            return 0
+        elif sys.argv[1] == "validate":
             if len(sys.argv) < 3:
                 print("Usage: python korsche_sync.py validate <image_path>")
                 return 1
