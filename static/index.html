@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kirsche API Server</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background-color: #deedee;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+
+    .sidebar {
+      width: 200px;
+      background-color: white;
+      border-right: 2px solid #333;
+      display: flex;
+      flex-direction: column;
+      transition: margin-left 0.3s ease;
+      position: relative;
+      z-index: 10;
+    }
+
+    .sidebar.collapsed {
+      margin-left: -200px;
+    }
+
+    .header {
+      padding: 20px 15px;
+      background-color: #f0f0f0;
+      border-bottom: 2px solid #333;
+      font-weight: bold;
+      font-size: 16px;
+      text-align: center;
+    }
+
+    .menu {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    .menu-item {
+      margin-bottom: 10px;
+      cursor: pointer;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+
+    .menu-item:hover {
+      border-color: #333;
+    }
+
+    .menu-item img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .toggle-btn {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      font-size: 24px;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      background: white;
+      border: 2px solid #333;
+      border-radius: 5px;
+      z-index: 20;
+      transition: left 0.3s ease;
+    }
+
+    .toggle-btn.sidebar-collapsed {
+      left: 20px;
+    }
+
+    .toggle-btn.sidebar-visible {
+      left: 220px;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 40px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .prompt-container {
+      width: 100%;
+      max-width: 800px;
+      background: white;
+      border: 2px solid #333;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .prompt-title {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .prompt-textarea {
+      width: 100%;
+      min-height: 200px;
+      padding: 15px;
+      font-size: 16px;
+      font-family: inherit;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      resize: vertical;
+      margin-bottom: 20px;
+    }
+
+    .prompt-textarea:focus {
+      outline: none;
+      border-color: #333;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 200px;
+      padding: 15px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      background: white;
+      border: 2px solid #333;
+      border-radius: 5px;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: #f0f0f0;
+    }
+
+    .btn:active {
+      transform: translateY(2px);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+    }
+
+    .error {
+      color: #d00;
+      padding: 10px;
+      background: #fee;
+      border: 1px solid #d00;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+
+    /* Lightbox styles */
+    .lightbox {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.9);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lightbox.active {
+      display: flex;
+    }
+
+    .lightbox-content {
+      max-width: 90%;
+      max-height: 90%;
+      object-fit: contain;
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: 20px;
+      right: 40px;
+      color: white;
+      font-size: 40px;
+      font-weight: bold;
+      cursor: pointer;
+      background: none;
+      border: none;
+    }
+
+    .lightbox-close:hover {
+      color: #ccc;
+    }
+
+    /* Scrollbar styling */
+    .menu::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .menu::-webkit-scrollbar-track {
+      background: #f0f0f0;
+    }
+
+    .menu::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 4px;
+    }
+
+    .menu::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+
+    /* History section */
+    .history-section {
+      width: 100%;
+      max-width: 800px;
+      margin-bottom: 30px;
+    }
+
+    .history-item {
+      background: white;
+      border: 2px solid #333;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #ddd;
+    }
+
+    .history-timestamp {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .history-prompt {
+      margin-bottom: 15px;
+      padding: 10px;
+      background: #f9f9f9;
+      border-left: 3px solid #333;
+      font-style: italic;
+    }
+
+    .history-image {
+      width: 100%;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .history-image:hover {
+      opacity: 0.9;
+    }
+
+    .history-loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div class="header">
+        Kirsche API Server
+      </div>
+      <div class="menu" id="menu">
+        <div class="loading">Loading images...</div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- History Section -->
+      <div class="history-section" id="historySection">
+        <!-- Generated images will appear here -->
+      </div>
+
+      <!-- Prompt Container (always visible at bottom) -->
+      <div class="prompt-container">
+        <div class="prompt-title">Prompt Generator</div>
+        <div id="errorContainer"></div>
+        <textarea 
+          class="prompt-textarea" 
+          id="promptText" 
+          placeholder="Enter a prompt or generate a random one..."
+        ></textarea>
+        <div class="button-group">
+          <button class="btn" id="randomBtn">Generate Random Prompt</button>
+          <button class="btn" id="enhanceBtn">Enhance Prompt with Gemini</button>
+          <button class="btn" id="submitBtn">Submit Prompt</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toggle Button -->
+  <button class="toggle-btn sidebar-visible" id="toggleBtn">&times;</button>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lightboxClose">&times;</button>
+    <img class="lightbox-content" id="lightboxImage" src="" alt="Full size image">
+  </div>
+
+  <script>
+    // State
+    let images = [];
+    let currentPage = 1;
+    const limit = 50;
+
+    // Elements
+    const sidebar = document.getElementById('sidebar');
+    const toggleBtn = document.getElementById('toggleBtn');
+    const menu = document.getElementById('menu');
+    const promptText = document.getElementById('promptText');
+    const randomBtn = document.getElementById('randomBtn');
+    const enhanceBtn = document.getElementById('enhanceBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const errorContainer = document.getElementById('errorContainer');
+    const historySection = document.getElementById('historySection');
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImage = document.getElementById('lightboxImage');
+    const lightboxClose = document.getElementById('lightboxClose');
+
+    // Toggle sidebar
+    toggleBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('collapsed');
+      toggleBtn.classList.toggle('sidebar-visible');
+      toggleBtn.classList.toggle('sidebar-collapsed');
+      toggleBtn.textContent = sidebar.classList.contains('collapsed') ? '+' : '×';
+    });
+
+    // Show error
+    function showError(message) {
+      errorContainer.innerHTML = `<div class="error">${message}</div>`;
+      setTimeout(() => {
+        errorContainer.innerHTML = '';
+      }, 5000);
+    }
+
+    // Load images from API
+    async function loadImages() {
+      try {
+        const response = await fetch(`/images?page=${currentPage}&limit=${limit}`);
+        if (!response.ok) {
+          throw new Error(`Failed to load images: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        images = data.images || [];
+        
+        if (images.length === 0) {
+          menu.innerHTML = '<div class="loading">No images available</div>';
+          return;
+        }
+
+        // Populate menu with thumbnails
+        menu.innerHTML = '';
+        images.forEach(image => {
+          const item = document.createElement('div');
+          item.className = 'menu-item';
+          
+          const img = document.createElement('img');
+          img.src = `/images/${image.name}/thumbnail`;
+          img.alt = image.name;
+          img.title = image.name;
+          
+          item.appendChild(img);
+          item.addEventListener('click', () => openLightbox(image.name));
+          
+          menu.appendChild(item);
+        });
+      } catch (error) {
+        console.error('Error loading images:', error);
+        menu.innerHTML = `<div class="loading">Error loading images: ${error.message}</div>`;
+      }
+    }
+
+    // Open lightbox with full image
+    function openLightbox(imageName) {
+      lightboxImage.src = `/images/${imageName}`;
+      lightbox.classList.add('active');
+    }
+
+    // Close lightbox
+    function closeLightbox() {
+      lightbox.classList.remove('active');
+      lightboxImage.src = '';
+    }
+
+    lightboxClose.addEventListener('click', closeLightbox);
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) {
+        closeLightbox();
+      }
+    });
+
+    // Handle Escape key to close lightbox
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && lightbox.classList.contains('active')) {
+        closeLightbox();
+      }
+    });
+
+    // Generate random prompt
+    randomBtn.addEventListener('click', async () => {
+      randomBtn.disabled = true;
+      randomBtn.textContent = 'Generating...';
+      
+      try {
+        const response = await fetch('/prompt/random', {
+          method: 'POST'
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to generate prompt: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        promptText.value = data.prompt;
+      } catch (error) {
+        console.error('Error generating prompt:', error);
+        showError(`Error generating prompt: ${error.message}`);
+      } finally {
+        randomBtn.disabled = false;
+        randomBtn.textContent = 'Generate Random Prompt';
+      }
+    });
+
+    // Enhance prompt with Gemini
+    enhanceBtn.addEventListener('click', async () => {
+      const prompt = promptText.value.trim();
+      
+      if (!prompt) {
+        showError('Please enter a prompt to enhance');
+        return;
+      }
+      
+      enhanceBtn.disabled = true;
+      enhanceBtn.textContent = 'Enhancing...';
+      
+      try {
+        const response = await fetch('/prompt/enhance', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ prompt })
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `Failed to enhance prompt: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        promptText.value = data.enhanced_prompt;
+      } catch (error) {
+        console.error('Error enhancing prompt:', error);
+        showError(`Error enhancing prompt: ${error.message}`);
+      } finally {
+        enhanceBtn.disabled = false;
+        enhanceBtn.textContent = 'Enhance Prompt with Gemini';
+      }
+    });
+
+    // Submit prompt to generate image
+    submitBtn.addEventListener('click', async () => {
+      const prompt = promptText.value.trim();
+      
+      if (!prompt) {
+        showError('Please enter a prompt to submit');
+        return;
+      }
+      
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Generating Image...';
+      
+      try {
+        const response = await fetch('/prompt/submit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ prompt })
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `Failed to generate image: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        // Add the generated image to history
+        addToHistory(prompt, data.image_url);
+        
+        // Clear the prompt textarea
+        promptText.value = '';
+        
+        // Reload the image menu to show the new image
+        loadImages();
+      } catch (error) {
+        console.error('Error generating image:', error);
+        showError(`Error generating image: ${error.message}`);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Prompt';
+      }
+    });
+
+    // Add generated image to history
+    function addToHistory(prompt, imageUrl) {
+      const historyItem = document.createElement('div');
+      historyItem.className = 'history-item';
+      
+      const timestamp = new Date().toLocaleString();
+      
+      historyItem.innerHTML = `
+        <div class="history-header">
+          <strong>Generated Image</strong>
+          <span class="history-timestamp">${timestamp}</span>
+        </div>
+        <div class="history-prompt">${prompt}</div>
+        <img class="history-image" src="${imageUrl}" alt="Generated image" onclick="openLightbox('${imageUrl.split('/').pop()}')">
+      `;
+      
+      // Add to the beginning of history section
+      historySection.insertBefore(historyItem, historySection.firstChild);
+    }
+
+    // Initialize
+    loadImages();
+  </script>
+</body>
+</html>
