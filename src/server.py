@@ -38,7 +38,7 @@ def get_config():
     """
     return {
         'host': os.getenv('HOST', '0.0.0.0'),
-        'port': int(os.getenv('PORT', '8080')),
+        'port': int(os.getenv('PORT', '7777')),
         'image_dir': os.getenv('IMAGE_DIR', 'images'),
         'thumbnail_dir': os.getenv('THUMBNAIL_DIR', 'thumbnails'),
         'static_dir': os.getenv('STATIC_DIR', 'static'),
