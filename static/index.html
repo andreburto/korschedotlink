@@ -355,6 +355,8 @@
     let images = [];
     let currentPage = 1;
     const limit = 50;
+    let isLoadingImages = false;
+    let hasMoreImages = true;
 
     // Elements
     const sidebar = document.getElementById('sidebar');
@@ -387,7 +389,20 @@
     }
 
     // Load images from API
-    async function loadImages() {
+    async function loadImages(append = false) {
+      if (isLoadingImages || !hasMoreImages) return;
+      
+      isLoadingImages = true;
+      
+      // Show loading indicator
+      if (append) {
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'loading';
+        loadingDiv.id = 'loadingMore';
+        loadingDiv.textContent = 'Loading more images...';
+        menu.appendChild(loadingDiv);
+      }
+      
       try {
         const response = await fetch(`/images?page=${currentPage}&limit=${limit}`);
         if (!response.ok) {
@@ -395,16 +410,34 @@
         }
         
         const data = await response.json();
-        images = data.images || [];
+        const newImages = data.images || [];
         
-        if (images.length === 0) {
-          menu.innerHTML = '<div class="loading">No images available</div>';
+        // Remove loading indicator
+        const loadingMore = document.getElementById('loadingMore');
+        if (loadingMore) {
+          loadingMore.remove();
+        }
+        
+        if (newImages.length === 0) {
+          hasMoreImages = false;
+          if (!append) {
+            menu.innerHTML = '<div class="loading">No images available</div>';
+          }
           return;
         }
 
-        // Populate menu with thumbnails
-        menu.innerHTML = '';
-        images.forEach(image => {
+        // Check if we got fewer images than requested (last page)
+        if (newImages.length < limit) {
+          hasMoreImages = false;
+        }
+
+        // Clear menu on first load
+        if (!append) {
+          menu.innerHTML = '';
+        }
+        
+        // Add new images to the menu
+        newImages.forEach(image => {
           const item = document.createElement('div');
           item.className = 'menu-item';
           
@@ -418,9 +451,21 @@
           
           menu.appendChild(item);
         });
+        
+        images = append ? [...images, ...newImages] : newImages;
+        currentPage++;
       } catch (error) {
         console.error('Error loading images:', error);
-        menu.innerHTML = `<div class="loading">Error loading images: ${error.message}</div>`;
+        if (!append) {
+          menu.innerHTML = `<div class="loading">Error loading images: ${error.message}</div>`;
+        } else {
+          const loadingMore = document.getElementById('loadingMore');
+          if (loadingMore) {
+            loadingMore.textContent = `Error loading more images: ${error.message}`;
+          }
+        }
+      } finally {
+        isLoadingImages = false;
       }
     }
 
@@ -546,7 +591,9 @@
         // Clear the prompt textarea
         promptText.value = '';
         
-        // Reload the image menu to show the new image
+        // Reload the image menu from the beginning to show the new image
+        currentPage = 1;
+        hasMoreImages = true;
         loadImages();
       } catch (error) {
         console.error('Error generating image:', error);
@@ -579,6 +626,18 @@
       // Scroll to the new item
       historyItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
+
+    // Infinite scroll for menu
+    menu.addEventListener('scroll', () => {
+      const scrollTop = menu.scrollTop;
+      const scrollHeight = menu.scrollHeight;
+      const clientHeight = menu.clientHeight;
+      
+      // Load more images when within 100px of the bottom
+      if (scrollHeight - scrollTop - clientHeight < 100) {
+        loadImages(true);
+      }
+    });
 
     // Initialize
     loadImages();

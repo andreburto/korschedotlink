@@ -25,6 +25,8 @@ from korsche_sync import (
     DEFAULT_GEMINI_IMAGE_MODEL
 )
 
+from prompt_maker import generate_prompt as generate_prompt2
+
 
 # ==============================================================================
 # Configuration
@@ -354,7 +356,7 @@ async def handle_random_prompt(request):
         web.Response: JSON response with generated prompt
     """
     try:
-        prompt = generate_prompt()
+        prompt = generate_prompt2()
         response_data = {'prompt': prompt}
         return web.Response(
             text=json.dumps(response_data),
