@@ -356,7 +356,7 @@ def generate_prompt(prompt_category=None):
     pov = random_sample(point_of_views)
     
     # Construct the prompt
-    prompt = f"A {category} wearing {clothing}, {pose} {setting}, {emotion}. The image is captured from a {pov}."
+    prompt = f"Kirsche is {category} wearing {clothing}, {pose} {setting}, {emotion}. The image is captured from a {pov}."
     
     return prompt
 

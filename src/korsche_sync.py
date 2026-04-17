@@ -463,6 +463,8 @@ def favico(kirsche_description: str, output_dir: str = "images"):
     
     # Initialize the Gemini client
     client = genai.Client(api_key=api_key)
+
+    print("✓ Environment variables loaded successfully")
     
     # Create a simplified prompt for favicon (focus on face/head)
     favicon_prompt = kirsche_description.format(
@@ -479,15 +481,20 @@ def favico(kirsche_description: str, output_dir: str = "images"):
     try:
         # Generate the image using Gemini
         response = client.models.generate_content(
-            model=os.getenv("GEMINI_IMAGE_MODEL", "gemini-2.5-flash-image"),
+            model=os.getenv("GEMINI_IMAGE_MODEL", DEFAULT_GEMINI_IMAGE_MODEL),
             contents=favicon_prompt
         )
+
+        print("✓ Favicon image generated successfully")
         
         # Create output directory if it doesn't exist
         os.makedirs(output_dir, exist_ok=True)
+
+        print(f"✓ Output directory ready: {output_dir}")
         
         # Extract and process the generated image
         if response.candidates and response.candidates[0].content.parts:
+            print("✓ Processing generated image for favicon")
             for part in response.candidates[0].content.parts:
                 if hasattr(part, 'inline_data') and part.inline_data:
                     image_data = part.inline_data.data

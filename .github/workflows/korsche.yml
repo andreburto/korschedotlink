@@ -28,6 +28,9 @@ jobs:
           UPLOADER_AWS_SECRET_KEY: ${{ secrets.UPLOADER_AWS_SECRET_KEY }}
           UPLOADER_S3_BUCKET: ${{ vars.UPLOADER_S3_BUCKET }}
 
+      - name: 10 second pause
+        run: sleep 10
+
       - name: Run favicon generation
         run: python src/korsche_sync.py favicon
         env:
