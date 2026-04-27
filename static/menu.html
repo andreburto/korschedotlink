@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kirsche API Server Menu</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background-color: #deedee;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .header {
+      height: 50px;
+      background-color: #f0f0f0;
+      border-bottom: 2px solid #333;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    .content-area {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .sidebar {
+      width: 200px;
+      background-color: white;
+      border-right: 2px solid #333;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    .menu-button {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 10px;
+      background-color: #f0f0f0;
+      border: 2px solid #333;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      transition: background-color 0.2s;
+      text-align: left;
+    }
+
+    .menu-button:hover {
+      background-color: #e0e0e0;
+    }
+
+    .menu-button.active {
+      background-color: #333;
+      color: white;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-container {
+      background-color: #f9f9f9;
+      padding: 10px;
+      border: 2px solid #333;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+
+    .form-container h3 {
+      font-size: 12px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      color: #666;
+    }
+
+    .form-group {
+      margin-bottom: 10px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 3px;
+      text-transform: capitalize;
+      font-size: 11px;
+    }
+
+    .form-group select {
+      width: 100%;
+      padding: 6px;
+      border: 2px solid #333;
+      border-radius: 5px;
+      font-size: 12px;
+      background-color: white;
+    }
+
+    .submit-button {
+      width: 100%;
+      padding: 10px;
+      background-color: #333;
+      color: white;
+      border: 2px solid #333;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      transition: background-color 0.2s;
+    }
+
+    .submit-button:hover {
+      background-color: #555;
+    }
+
+    .submit-button:disabled {
+      background-color: #999;
+      cursor: not-allowed;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      font-size: 16px;
+      color: #666;
+    }
+
+    .error {
+      background-color: #ffebee;
+      color: #c62828;
+      padding: 15px;
+      border: 2px solid #c62828;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+
+    .result-container {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .result-item {
+      background-color: white;
+      padding: 20px;
+      border: 2px solid #333;
+      border-radius: 5px;
+    }
+
+    .result-item .timestamp {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    .result-item .prompt {
+      font-size: 14px;
+      margin-bottom: 10px;
+      padding: 10px;
+      background-color: #f0f0f0;
+      border-left: 4px solid #333;
+    }
+
+    .result-item img {
+      max-width: 100%;
+      height: auto;
+      border: 2px solid #333;
+      border-radius: 5px;
+      display: block;
+    }
+
+    .no-selection {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      Kirsche API Server Menu
+    </div>
+    <div class="content-area">
+      <div class="sidebar" id="sidebar">
+        <div class="loading">Loading menu...</div>
+      </div>
+      <div class="main-content" id="mainContent">
+        <div class="no-selection">
+          Select a character type from the menu to begin
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentKey = null;
+    let formData = {};
+
+    // Load menu items
+    async function loadMenu() {
+      try {
+        const response = await fetch('/details');
+        if (!response.ok) throw new Error('Failed to load menu');
+        
+        const data = await response.json();
+        const sidebar = document.getElementById('sidebar');
+        sidebar.innerHTML = '';
+        
+        data.keys.forEach(key => {
+          const button = document.createElement('button');
+          button.className = 'menu-button';
+          button.textContent = key;
+          button.id = `btn-${key}`;
+          button.addEventListener('click', () => selectKey(key));
+          sidebar.appendChild(button);
+        });
+      } catch (error) {
+        console.error('Error loading menu:', error);
+        document.getElementById('sidebar').innerHTML = 
+          '<div class="error">Failed to load menu</div>';
+      }
+    }
+
+    // Select a key and load its form
+    async function selectKey(key) {
+      // Remove any existing form
+      const existingForm = document.getElementById('formContainer');
+      if (existingForm) {
+        existingForm.remove();
+      }
+
+      // Update active button
+      document.querySelectorAll('.menu-button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      
+      const activeButton = document.getElementById(`btn-${key}`);
+      if (activeButton) {
+        activeButton.classList.add('active');
+      }
+
+      currentKey = key;
+      
+      try {
+        const response = await fetch(`/details/${encodeURIComponent(key)}`);
+        if (!response.ok) throw new Error('Failed to load form data');
+        
+        const data = await response.json();
+        renderForm(key, data);
+      } catch (error) {
+        console.error('Error loading form:', error);
+        document.getElementById('mainContent').innerHTML = 
+          '<div class="error">Failed to load form data</div>';
+      }
+    }
+
+    // Render the form in the sidebar below the clicked button
+    function renderForm(key, data) {
+      const sidebar = document.getElementById('sidebar');
+      const activeButton = document.getElementById(`btn-${key}`);
+      formData = {};
+      
+      // Create form container
+      const formContainer = document.createElement('div');
+      formContainer.className = 'form-container';
+      formContainer.id = 'formContainer';
+      
+      let formHTML = '<h3>Options</h3>';
+      
+      // Create dropdowns for each category
+      for (const [category, options] of Object.entries(data)) {
+        formHTML += `
+          <div class="form-group">
+            <label for="${category}">${category}</label>
+            <select id="${category}" name="${category}">
+              <option value="">-- Select --</option>
+              ${options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+            </select>
+          </div>
+        `;
+      }
+      
+      formHTML += '<button class="submit-button" id="submitButton">Generate</button>';
+      
+      formContainer.innerHTML = formHTML;
+      
+      // Insert form after the active button
+      if (activeButton && activeButton.nextSibling) {
+        sidebar.insertBefore(formContainer, activeButton.nextSibling);
+      } else if (activeButton) {
+        sidebar.appendChild(formContainer);
+      }
+      
+      // Add event listeners to selects
+      Object.keys(data).forEach(category => {
+        const select = document.getElementById(category);
+        if (select) {
+          select.addEventListener('change', (e) => {
+            formData[category] = e.target.value;
+          });
+        }
+      });
+      
+      // Add event listener to submit button
+      const submitButton = document.getElementById('submitButton');
+      if (submitButton) {
+        submitButton.addEventListener('click', handleSubmit);
+      }
+
+      // Only show instructions if there are no results yet
+      const mainContent = document.getElementById('mainContent');
+      const hasResults = mainContent.querySelector('.result-container');
+      if (!hasResults) {
+        mainContent.innerHTML = 
+          '<div class="no-selection">Select options and click Generate to create an image</div>';
+      }
+    }
+
+    // Handle form submission
+    async function handleSubmit() {
+      const submitButton = document.getElementById('submitButton');
+      submitButton.disabled = true;
+      submitButton.textContent = 'Generating...';
+      
+      try {
+        // Construct prompt from selected values
+        const promptParts = Object.values(formData).filter(v => v);
+        if (promptParts.length === 0) {
+          alert('Please select at least one option');
+          submitButton.disabled = false;
+          submitButton.textContent = 'Generate Image';
+          return;
+        }
+        
+        const constructedPrompt = `A photo of a ${currentKey} ${promptParts.join(', ')}`;
+        
+        // Step 1: Enhance the prompt
+        const enhanceResponse = await fetch('/prompt/enhance', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: constructedPrompt })
+        });
+        
+        if (!enhanceResponse.ok) throw new Error('Failed to enhance prompt');
+        const enhanceData = await enhanceResponse.json();
+        const enhancedPrompt = enhanceData.enhanced_prompt;
+        
+        // Step 2: Submit the enhanced prompt with reference type
+        const submitResponse = await fetch('/prompt/submit2', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            prompt: enhancedPrompt,
+            reference_type: currentKey
+          })
+        });
+        
+        if (!submitResponse.ok) throw new Error('Failed to generate image');
+        const submitData = await submitResponse.json();
+        
+        // Display the result
+        displayResult(constructedPrompt, enhancedPrompt, submitData.image_url);
+        
+      } catch (error) {
+        console.error('Error:', error);
+        alert(`Error: ${error.message}`);
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Generate';
+      }
+    }
+
+    // Display the generated image result
+    function displayResult(originalPrompt, enhancedPrompt, imageUrl) {
+      const mainContent = document.getElementById('mainContent');
+      
+      // Ensure result container exists
+      let resultContainer = document.getElementById('resultContainer');
+      if (!resultContainer) {
+        resultContainer = document.createElement('div');
+        resultContainer.className = 'result-container';
+        resultContainer.id = 'resultContainer';
+        mainContent.innerHTML = '';
+        mainContent.appendChild(resultContainer);
+      }
+      
+      const timestamp = new Date().toLocaleString();
+      
+      const resultHTML = `
+        <div class="result-item">
+          <div class="timestamp">${timestamp}</div>
+          <div class="prompt">
+            <strong>Original:</strong> ${originalPrompt}<br>
+            <strong>Enhanced:</strong> ${enhancedPrompt}
+          </div>
+          <img src="${imageUrl}" alt="Generated image" loading="lazy">
+        </div>
+      `;
+      
+      resultContainer.insertAdjacentHTML('beforeend', resultHTML);
+      
+      // Scroll to the new result
+      setTimeout(() => {
+        const newResult = resultContainer.lastElementChild;
+        newResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+
+    // Initialize
+    loadMenu();
+  </script>
+</body>
+</html>

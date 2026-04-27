@@ -9,11 +9,15 @@ import asyncio
 import json
 import mimetypes
 import os
+from random import random
 import sys
 
 from aiohttp import web
+from google.genai import types
+from google import genai
 from pathlib import Path
 from PIL import Image
+from litellm import api_key
 
 # Import from korsche_sync module
 from korsche_sync import (
@@ -25,7 +29,7 @@ from korsche_sync import (
     DEFAULT_GEMINI_IMAGE_MODEL
 )
 
-from prompt_maker import generate_prompt as generate_prompt2
+from prompt_maker import generate_prompt as generate_prompt2, PROMPT_DATA
 
 
 # ==============================================================================
@@ -115,6 +119,19 @@ async def generate_thumbnail(image_path, thumbnail_path, max_dimension=128):
     return thumbnail_path
 
 
+def get_reference_image_by_name(image_name):
+    """
+    """
+    ref_img = Path("refs") / image_name
+
+    if not ref_img.exists() or not ref_img.is_file():
+        raise ValueError(f"Image not found: {ref_img}")
+    
+    # Return the first image file (or you can implement random selection)
+    with open(ref_img, "rb") as f:
+        return f.read()
+
+
 # ==============================================================================
 # Request Handlers
 # ==============================================================================
@@ -143,6 +160,33 @@ async def handle_root(request):
         return web.Response(text=content, content_type='text/html')
     except Exception as e:
         return web.Response(text=f'Error reading index.html: {str(e)}', status=500)
+
+
+async def handle_menu(request):
+    """
+    Handle GET /menu - Serve the menu.html file from the static directory.
+    
+    Args:
+        request: aiohttp request object
+        
+    Returns:
+        web.Response: HTML response or error
+    """
+    config = request.app['config']
+    static_dir = Path(config['static_dir'])
+    menu_path = static_dir / 'menu.html'
+    
+    # Check if menu.html exists
+    if not menu_path.exists() or not menu_path.is_file():
+        return web.Response(text='menu.html not found', status=404)
+    
+    # Read and return the file
+    try:
+        with open(menu_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        return web.Response(text=content, content_type='text/html')
+    except Exception as e:
+        return web.Response(text=f'Error reading menu.html: {str(e)}', status=500)
 
 
 async def handle_static(request):
@@ -499,6 +543,172 @@ async def handle_submit_prompt(request):
         )
 
 
+async def handle_submit_prompt_with_image(request):
+    """
+    Handle POST /prompt/submit2 - Generate a Kirsche image from a prompt and reference image.
+    
+    Args:
+        request: aiohttp request object
+        
+    Returns:
+        web.Response: JSON response with image URL
+    """
+    config = request.app['config']
+    
+    # Check if API key is configured
+    if not config['gemini_api_key']:
+        return web.Response(
+            text=json.dumps({'error': 'GEMINI_API_KEY not configured'}),
+            status=500,
+            content_type='application/json'
+        )
+    
+    # Parse request body
+    try:
+        body = await request.json()
+        prompt = body.get('prompt')
+        reference_type = body.get('reference_type')
+        
+        if not prompt or not reference_type:
+            return web.Response(
+                text=json.dumps({'error': 'Missing "prompt" or "reference_image" field in request body'}),
+                status=400,
+                content_type='application/json'
+            )
+    except json.JSONDecodeError:
+        return web.Response(
+            text=json.dumps({'error': 'Invalid JSON in request body'}),
+            status=400,
+            content_type='application/json'
+        )
+    
+    # Get reference image data
+    try:
+        file_name_by_type = {
+            "homemaker": "trad_wife.jpg",
+            "fitness enthusiast": "workout.jpg",
+            "snoop": "snoop.jpg",
+            "damsel in distress": "sexy_spy.jpg",
+        }
+        reference_image = file_name_by_type.get(reference_type, "trad_wife.jpg")
+        reference_image_data = get_reference_image_by_name(reference_image)
+
+        # Generate filename
+        filename = generate_filename()
+        file_path = os.path.join(config['image_dir'], filename)
+        
+        # Ensure image directory exists
+        os.makedirs(config['image_dir'], exist_ok=True)
+
+        # Generate and save the image
+        # generate_image(prompt=prompt, reference_image=reference_image, save_file=file_path, api_key=config['gemini_api_key'])
+
+        # Create the prompt
+        prompt = (f"Create an image of Kirsche {prompt}."
+                  " Use the reference image for style and character design cues for Kirsche."
+                  " Keep the style to a 2D cartoon like One Piece, Bleach, or Sailor Moon."
+                  " Stay PG and family-friendly.")
+        
+        # Generate the image
+        client = genai.Client(api_key=config['gemini_api_key'])
+        response = client.models.generate_content(
+            model="gemini-2.5-flash-image",
+            contents=[
+                types.Part.from_bytes(
+                    data=reference_image_data,
+                    mime_type=f"image/{reference_image.split('.')[-1]}"  # Extract image type from filename
+                ),
+                prompt
+                # enhance_prompt_with_gemini(
+                #     prompt,
+                #     model=config['gemini_prompt_model'],
+                #     api_key=config['gemini_api_key']
+                # )
+            ]
+        )
+        
+        # Get the generated image from response
+        generated_image = response.candidates[0].content.parts[0].inline_data.data
+
+        # Save the generated image
+        with open(file_path, "wb") as f:
+            f.write(generated_image)
+        
+        # Build the image URL
+        image_url = f"/images/{filename}"
+        
+        response_data = {'image_url': image_url, 'prompt': prompt}
+        return web.Response(
+            text=json.dumps(response_data),
+            content_type='application/json'
+        )
+    except Exception as e:
+        return web.Response(
+            text=json.dumps({'error': f'Error generating image: {str(e)}'}),
+            status=500,
+            content_type='application/json'
+        )
+
+
+async def handle_get_details(request):
+    """
+    Handle GET /details - Return the keys from PROMPT_DATA dictionary.
+    
+    Args:
+        request: aiohttp request object
+        
+    Returns:
+        web.Response: JSON response with PROMPT_DATA keys
+    """
+    try:
+        keys = list(PROMPT_DATA.keys())
+        response_data = {'keys': keys}
+        return web.Response(
+            text=json.dumps(response_data),
+            content_type='application/json'
+        )
+    except Exception as e:
+        return web.Response(
+            text=json.dumps({'error': f'Error retrieving details: {str(e)}'}),
+            status=500,
+            content_type='application/json'
+        )
+
+
+async def handle_get_detail_by_key(request):
+    """
+    Handle GET /details/{key} - Return the dictionary for a specific key.
+    
+    Args:
+        request: aiohttp request object
+        
+    Returns:
+        web.Response: JSON response with the dictionary for the specified key
+    """
+    key = request.match_info['key']
+    
+    # Check if key exists in PROMPT_DATA
+    if key not in PROMPT_DATA:
+        return web.Response(
+            text=json.dumps({'error': f'Key "{key}" not found'}),
+            status=404,
+            content_type='application/json'
+        )
+    
+    try:
+        response_data = PROMPT_DATA[key]
+        return web.Response(
+            text=json.dumps(response_data),
+            content_type='application/json'
+        )
+    except Exception as e:
+        return web.Response(
+            text=json.dumps({'error': f'Error retrieving detail: {str(e)}'}),
+            status=500,
+            content_type='application/json'
+        )
+
+
 # ==============================================================================
 # Application Setup
 # ==============================================================================
@@ -517,6 +727,7 @@ def create_app(config):
     
     # Add routes
     app.router.add_get('/', handle_root)
+    app.router.add_get('/menu', handle_menu)
     app.router.add_get('/static/{filename}', handle_static)
     app.router.add_get('/images', handle_list_images)
     app.router.add_get('/images/{image_name}', handle_get_image)
@@ -524,6 +735,9 @@ def create_app(config):
     app.router.add_post('/prompt/random', handle_random_prompt)
     app.router.add_post('/prompt/enhance', handle_enhance_prompt)
     app.router.add_post('/prompt/submit', handle_submit_prompt)
+    app.router.add_post('/prompt/submit2', handle_submit_prompt_with_image)
+    app.router.add_get('/details', handle_get_details)
+    app.router.add_get('/details/{key}', handle_get_detail_by_key)
     
     return app
 

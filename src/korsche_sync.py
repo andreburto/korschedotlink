@@ -29,7 +29,7 @@ from time import sleep
 # Constants and Configuration
 # ==============================================================================
 KIRSCHE_DESCRIPTION = """
-Use this reference image: https://cftest.mothersect.info/refs/kirsche_verstahl_sheet_01.jpg
+Use this reference image: https://cftest.mothersect.info/refs/kirsche_verstahl_sheet_02.jpg
 
 Kirsche is an anime fox girl with human facial features, including a small nose, large expressive eyes, and a friendly smile. She has fox ears on the top of her head that are covered in white fur that matches the fur on her tail and her hair. Her hair is long, white, and flowing. She has cherry earrings on the tip of her fox ears and cherry hair barrettes. She has an electric blue halo over one ear.
 
@@ -218,12 +218,12 @@ def enhance_prompt_with_gemini(prompt, model, api_key):
         str: The enhanced prompt, or the original prompt if enhancement fails
     """    
     enhancement_instruction = (
-        f"You are a creative prompt enhancer. Take the following image generation prompt "
-        f"and make it more creative, detailed, and vivid while keeping it PG-rated. "
-        f"Kirsche only has fox ears with white fur that matches her hair and tail. "
-        f"Maintain the core structure and elements but add artistic details, atmosphere, "
-        f"lighting, composition, and style elements. Return ONLY the enhanced prompt, "
-        f"nothing else.\n\nOriginal prompt: {prompt}"
+        f"You are a creative prompt enhancer. Take the following image generation prompt"
+        f" and make it more creative, detailed, and vivid while keeping it PG-rated."
+        f" Kirsche only has fox ears with white fur that matches her hair and tail."
+        f" Maintain the core structure and elements but add artistic details, atmosphere,"
+        f" lighting, composition, and style elements. The art style should be 2D anime like One Piece, Bleach, or Sailor Moon."
+        f" Return ONLY the enhanced prompt, nothing else.\n\nOriginal prompt: {prompt}"
     )
     
     # Initialize the Gemini client
