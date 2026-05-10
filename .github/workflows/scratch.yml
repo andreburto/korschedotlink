@@ -18,8 +18,7 @@ jobs:
         run: pip install -r src/requirements.txt
       
       - name: Run korsche_sync
-        id: generate_image
-        run: echo "img_path=$(python src/scratch.py)" >> $GITHUB_OUTPUT
+        run: python src/scratch.py
         env:
           AWS_REGION: 'us-east-1'
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -28,7 +27,10 @@ jobs:
           UPLOADER_S3_BUCKET: ${{ vars.UPLOADER_S3_BUCKET }}
 
       - name: upload to s3
-        run: python src/upload.py ${{ steps.generate_image.outputs.img_path }}
+        run: |
+          ls images/*
+          ls images/* | head -n 1
+          python src/upload.py $(ls images* | head -n 1)
         env:
           AWS_REGION: 'us-east-1'
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
