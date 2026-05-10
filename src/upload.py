@@ -22,11 +22,11 @@ def main():
 
     # Example usage of upload_file_to_s3
     file_path = os.path.join(
-        os.path.curdir, sys.argv[1])  # Path to the file you want to upload
-    s3_key = os.path.join(file_path, sys.argv[1])  # Desired S3 key for the uploaded file
+        os.path.dirname(os.path.abspath(os.path.curdir)), 
+        sys.argv[1])  # Path to the file you want to upload
 
-    if upload_to_s3(file_path, s3_bucket, s3_key, aws_access_key, aws_secret_key):
-        print(f"File {file_path} uploaded to S3 bucket https://{s3_bucket}/{s3_key}")
+    if upload_to_s3(file_path, s3_bucket, sys.argv[1], aws_access_key, aws_secret_key):
+        print(f"File {file_path} uploaded to S3 bucket https://{s3_bucket}/{sys.argv[1]}")
     else:
         print("File upload failed")
         sys.exit(1)
