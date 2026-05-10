@@ -1,0 +1,37 @@
+name: Korsche Sync
+
+on:
+  workflow_dispatch:  # Allows manual trigger
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: pip install -r src/requirements.txt
+      
+      - name: Run korsche_sync
+        id: generate_image
+        run: echo "img_path=$(python src/scratch.py)" >> $GITHUB_OUTPUT
+        env:
+          AWS_REGION: 'us-east-1'
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          UPLOADER_AWS_ACCESS_KEY: ${{ secrets.UPLOADER_AWS_ACCESS_KEY }}
+          UPLOADER_AWS_SECRET_KEY: ${{ secrets.UPLOADER_AWS_SECRET_KEY }}
+          UPLOADER_S3_BUCKET: ${{ vars.UPLOADER_S3_BUCKET }}
+
+      - name: upload to s3
+        run: python src/upload.py ${{ steps.generate_image.outputs.img_path }}
+        env:
+          AWS_REGION: 'us-east-1'
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          UPLOADER_AWS_ACCESS_KEY: ${{ secrets.UPLOADER_AWS_ACCESS_KEY }}
+          UPLOADER_AWS_SECRET_KEY: ${{ secrets.UPLOADER_AWS_SECRET_KEY }}
+          UPLOADER_S3_BUCKET: ${{ vars.UPLOADER_S3_BUCKET }}

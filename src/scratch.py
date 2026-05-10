@@ -7,7 +7,9 @@ production use and may be deleted or refactored in the future.
 
 import os
 import random
+import sys
 import uuid
+
 from pathlib import Path
 
 from google import genai
@@ -104,6 +106,8 @@ def generate_kirsche_image(reference_image_path, setting, pose):
     # Save the generated image
     with open(output_path, "wb") as f:
         f.write(generated_image)
+
+    
     
     return str(output_path)
 
@@ -124,6 +128,8 @@ def main():
             "workout": "fitness enthusiast",
             "snoop": "snoop",
             "sexy_spy": "damsel in distress",
+            "star_trek": "star trek fan",
+            "army": "army",
         }
         
         setting = random_sample(PROMPT_DATA[prompt_by_file_name[file_name]]["setting"])
@@ -132,7 +138,7 @@ def main():
         
         # Step 2-4: Generate and save the image
         output_path = generate_kirsche_image(reference_image, setting, pose)
-        print(f"Generated image saved to: {output_path}")
+        print(f"{output_path}")
         
     except Exception as e:
         print(f"Error: {e}")
