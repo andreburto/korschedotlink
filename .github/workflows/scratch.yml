@@ -30,7 +30,7 @@ jobs:
         run: |
           ls images/*
           ls images/* | head -n 1
-          python src/upload.py $(ls images* | head -n 1)
+          python src/upload.py "$(ls images/* | head -n 1)"
         env:
           AWS_REGION: 'us-east-1'
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}

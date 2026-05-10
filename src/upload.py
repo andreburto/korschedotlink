@@ -14,6 +14,8 @@ def main():
     if not all([api_key, aws_access_key, aws_secret_key, s3_bucket]):
         raise ValueError("One or more required environment variables are not set")
     
+    print(sys.argv)
+    
     if len(sys.argv) != 2:
         print("Usage: python src/upload.py <file_path>")
         sys.exit(1)
@@ -21,7 +23,7 @@ def main():
     # Example usage of upload_file_to_s3
     file_path = os.path.join(
         os.path.dirname(os.path.abspath(__file__)), sys.argv[1])  # Path to the file you want to upload
-    s3_key = sys.argv[1]  # Desired S3 key for the uploaded file
+    s3_key = os.path.join(file_path, sys.argv[1])  # Desired S3 key for the uploaded file
 
     upload_to_s3(file_path, s3_bucket, s3_key, aws_access_key, aws_secret_key)
     print(f"File {file_path} uploaded to S3 bucket https://{s3_bucket}/{s3_key}")
