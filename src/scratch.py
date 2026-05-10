@@ -106,8 +106,6 @@ def generate_kirsche_image(reference_image_path, setting, pose):
     # Save the generated image
     with open(output_path, "wb") as f:
         f.write(generated_image)
-
-    
     
     return str(output_path)
 

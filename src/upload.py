@@ -25,8 +25,11 @@ def main():
         os.path.dirname(os.path.abspath(__file__)), sys.argv[1])  # Path to the file you want to upload
     s3_key = os.path.join(file_path, sys.argv[1])  # Desired S3 key for the uploaded file
 
-    upload_to_s3(file_path, s3_bucket, s3_key, aws_access_key, aws_secret_key)
-    print(f"File {file_path} uploaded to S3 bucket https://{s3_bucket}/{s3_key}")
+    if upload_to_s3(file_path, s3_bucket, s3_key, aws_access_key, aws_secret_key):
+        print(f"File {file_path} uploaded to S3 bucket https://{s3_bucket}/{s3_key}")
+    else:
+        print("File upload failed")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
