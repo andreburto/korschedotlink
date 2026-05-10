@@ -1,7 +1,7 @@
 import os
 import sys
 
-from korsche_sync import upload_file_to_s3
+from korsche_sync import upload_to_s3
 
 
 def main():
@@ -23,7 +23,7 @@ def main():
         os.path.dirname(os.path.abspath(__file__)), sys.argv[1])  # Path to the file you want to upload
     s3_key = sys.argv[1]  # Desired S3 key for the uploaded file
 
-    upload_file_to_s3(file_path, s3_bucket, s3_key, aws_access_key, aws_secret_key)
+    upload_to_s3(file_path, s3_bucket, s3_key, aws_access_key, aws_secret_key)
     print(f"File {file_path} uploaded to S3 bucket https://{s3_bucket}/{s3_key}")
 
 
