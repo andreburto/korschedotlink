@@ -29,6 +29,8 @@ description: 'Simple API server to handle managing Kirsche images.'
 9. `POST /prompt/submit`: Submit a prompt to generate a Kirsche image in two steps: (1) geneate a file name with `f"{IMAGE_DIR}/{generate_filename()}` and (2) call `generate_image(prompt, file_path)`. The request should include a JSON body with a field named `prompt` containing the prompt to be submitted. The response should include the generated image in a field named `image_url`, which is the URL where the generated image can be accessed via the `GET /images/{image_name}` endpoint. The server should handle the image generation process, save the generated image to the IMAGE_DIR directory, and return the appropriate URL for accessing the image.
 10. `GET /details`: Return a JSON respose withe the keys from `PROMPT_DATA` dictionary in prompt_manager.py.
 11. `GET /details/{key}`: Return a JSON response with the dictionary corresponding to the specified key from the `PROMPT_DATA` dictionary in prompt_manager.py. If the key does not exist, return a 404 error.
+12. `GET /lazy`: Redirect to `lazy.html` in the static directory.
+13. `POST /lazy/generate`: Generate an enhanced prompt. It should take a JSON body with two fields: `reference_image` (the name of the image in the `refs` directory to use) and `prompt` (the prompt to enhance). The server should retrieve the reference image data based on the provided `reference_image` name, and then call Gemini with the image and the prompt using the GEMINI_PROMPT_MODEL, which will return an expanded prompt based on the image. The response should include the enhanced prompt in a field named `enhanced_prompt`.
 
 # Environment Variables
 

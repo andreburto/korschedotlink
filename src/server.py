@@ -31,6 +31,17 @@ from korsche_sync import (
 
 from prompt_maker import generate_prompt as generate_prompt2, PROMPT_DATA
 
+DEFAULT_FILE_NAME = "trad_wife.jpg"
+FILE_NAME_BY_TYPE = {
+    "homemaker": DEFAULT_FILE_NAME,
+    "fitness enthusiast": "workout.jpg",
+    "snoop": "snoop.jpg",
+    "damsel in distress": "sexy_spy.jpg",
+    "star trek fan": "star_trek.jpg",
+    "party girl": "dance_club.jpg",
+    "army": "army.jpg",
+}
+
 
 # ==============================================================================
 # Configuration
@@ -189,6 +200,33 @@ async def handle_menu(request):
         return web.Response(text=f'Error reading menu.html: {str(e)}', status=500)
 
 
+async def handle_lazy(request):
+    """
+    Handle GET /lazy - Serve the lazy.html file from the static directory.
+    
+    Args:
+        request: aiohttp request object
+        
+    Returns:
+        web.Response: HTML response or error
+    """
+    config = request.app['config']
+    static_dir = Path(config['static_dir'])
+    lazy_path = static_dir / 'lazy.html'
+    
+    # Check if lazy.html exists
+    if not lazy_path.exists() or not lazy_path.is_file():
+        return web.Response(text='lazy.html not found', status=404)
+    
+    # Read and return the file
+    try:
+        with open(lazy_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        return web.Response(text=content, content_type='text/html')
+    except Exception as e:
+        return web.Response(text=f'Error reading lazy.html: {str(e)}', status=500)
+
+
 async def handle_static(request):
     """
     Handle GET /static/{filename} - Serve static files.
@@ -228,6 +266,80 @@ async def handle_static(request):
         return web.Response(body=content, content_type=content_type)
     except Exception as e:
         return web.Response(text=f'Error reading file: {str(e)}', status=500)
+
+
+async def handle_list_refs(request):
+    """
+    Handle GET /refs - Retrieve a list of reference images.
+    
+    Args:
+        request: aiohttp request object
+        
+    Returns:
+        web.Response: JSON response with reference image list
+    """
+    refs_dir = Path('refs')
+    
+    if not refs_dir.exists():
+        return web.Response(
+            text=json.dumps({'error': 'Reference directory not found'}),
+            status=404,
+            content_type='application/json'
+        )
+    
+    # Get all image files from refs directory
+    image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'}
+    ref_images = []
+    
+    for file_path in refs_dir.iterdir():
+        if file_path.is_file() and file_path.suffix.lower() in image_extensions:
+            ref_images.append(file_path.name)
+    
+    response_data = {'images': sorted(ref_images)}
+    return web.Response(
+        text=json.dumps(response_data),
+        content_type='application/json'
+    )
+
+
+async def handle_get_ref_image(request):
+    """
+    Handle GET /refs/{image_name} - Retrieve a specific reference image.
+    
+    Args:
+        request: aiohttp request object
+        
+    Returns:
+        web.Response: Reference image file response or 404 error
+    """
+    image_name = request.match_info['image_name']
+    refs_dir = Path('refs')
+    image_path = refs_dir / image_name
+    
+    # Security check
+    try:
+        image_path = image_path.resolve()
+        refs_dir = refs_dir.resolve()
+        if not str(image_path).startswith(str(refs_dir)):
+            return web.Response(text='Forbidden', status=403)
+    except Exception:
+        return web.Response(text='Bad Request', status=400)
+    
+    if not image_path.exists() or not image_path.is_file():
+        return web.Response(text='Reference image not found', status=404)
+    
+    # Determine content type
+    content_type, _ = mimetypes.guess_type(str(image_path))
+    if content_type is None:
+        content_type = 'application/octet-stream'
+    
+    # Read and return the image
+    try:
+        with open(image_path, 'rb') as f:
+            content = f.read()
+        return web.Response(body=content, content_type=content_type)
+    except Exception as e:
+        return web.Response(text=f'Error reading reference image: {str(e)}', status=500)
 
 
 async def handle_list_images(request):
@@ -584,13 +696,7 @@ async def handle_submit_prompt_with_image(request):
     
     # Get reference image data
     try:
-        file_name_by_type = {
-            "homemaker": "trad_wife.jpg",
-            "fitness enthusiast": "workout.jpg",
-            "snoop": "snoop.jpg",
-            "damsel in distress": "sexy_spy.jpg",
-        }
-        reference_image = file_name_by_type.get(reference_type, "trad_wife.jpg")
+        reference_image = FILE_NAME_BY_TYPE.get(reference_type, DEFAULT_FILE_NAME)
         reference_image_data = get_reference_image_by_name(reference_image)
 
         # Generate filename
@@ -709,6 +815,100 @@ async def handle_get_detail_by_key(request):
         )
 
 
+async def handle_lazy_generate(request):
+    """
+    Handle POST /lazy/generate - Generate an enhanced prompt using a reference image.
+    
+    Args:
+        request: aiohttp request object
+        
+    Returns:
+        web.Response: JSON response with enhanced prompt
+    """
+    config = request.app['config']
+    
+    # Check if API key is configured
+    if not config['gemini_api_key']:
+        return web.Response(
+            text=json.dumps({'error': 'GEMINI_API_KEY not configured'}),
+            status=500,
+            content_type='application/json'
+        )
+    
+    # Parse request body
+    try:
+        body = await request.json()
+        reference_image = body.get('reference_image')
+        prompt = body.get('prompt')
+        
+        if not reference_image or not prompt:
+            return web.Response(
+                text=json.dumps({'error': 'Missing "reference_image" or "prompt" field in request body'}),
+                status=400,
+                content_type='application/json'
+            )
+    except json.JSONDecodeError:
+        return web.Response(
+            text=json.dumps({'error': 'Invalid JSON in request body'}),
+            status=400,
+            content_type='application/json'
+        )
+    
+    # Get reference image data
+    try:
+        reference_image_data = get_reference_image_by_name(reference_image)
+    except ValueError as e:
+        return web.Response(
+            text=json.dumps({'error': str(e)}),
+            status=404,
+            content_type='application/json'
+        )
+    except Exception as e:
+        return web.Response(
+            text=json.dumps({'error': f'Error loading reference image: {str(e)}'}),
+            status=500,
+            content_type='application/json'
+        )
+    
+    # Generate enhanced prompt using Gemini with the reference image
+    try:
+        client = genai.Client(api_key=config['gemini_api_key'])
+        
+        # Create a prompt for Gemini to enhance the user's prompt based on the reference image
+        enhancement_request = (
+            f"Based on the reference image provided, expand and enhance this prompt: '{prompt}'. "
+            "Create a detailed description that captures the style, mood, and character design from the reference image. "
+            "Keep the style to a 2D cartoon like One Piece, Bleach, or Sailor Moon. "
+            "Stay PG and family-friendly. "
+            "Return only the enhanced prompt text without any additional explanation."
+        )
+        
+        response = client.models.generate_content(
+            model=config['gemini_prompt_model'],
+            contents=[
+                types.Part.from_bytes(
+                    data=reference_image_data,
+                    mime_type=f"image/{reference_image.split('.')[-1]}"
+                ),
+                enhancement_request
+            ]
+        )
+        
+        enhanced_prompt = response.text.strip()
+        
+        response_data = {'enhanced_prompt': enhanced_prompt}
+        return web.Response(
+            text=json.dumps(response_data),
+            content_type='application/json'
+        )
+    except Exception as e:
+        return web.Response(
+            text=json.dumps({'error': f'Error generating enhanced prompt: {str(e)}'}),
+            status=500,
+            content_type='application/json'
+        )
+
+
 # ==============================================================================
 # Application Setup
 # ==============================================================================
@@ -728,7 +928,10 @@ def create_app(config):
     # Add routes
     app.router.add_get('/', handle_root)
     app.router.add_get('/menu', handle_menu)
+    app.router.add_get('/lazy', handle_lazy)
     app.router.add_get('/static/{filename}', handle_static)
+    app.router.add_get('/refs', handle_list_refs)
+    app.router.add_get('/refs/{image_name}', handle_get_ref_image)
     app.router.add_get('/images', handle_list_images)
     app.router.add_get('/images/{image_name}', handle_get_image)
     app.router.add_get('/images/{image_name}/thumbnail', handle_get_thumbnail)
@@ -738,6 +941,7 @@ def create_app(config):
     app.router.add_post('/prompt/submit2', handle_submit_prompt_with_image)
     app.router.add_get('/details', handle_get_details)
     app.router.add_get('/details/{key}', handle_get_detail_by_key)
+    app.router.add_post('/lazy/generate', handle_lazy_generate)
     
     return app
 

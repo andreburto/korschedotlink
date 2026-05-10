@@ -292,6 +292,24 @@ PROMPT_DATA = {
             "seeming observant",
             "looking mysterious"
         ]
+    },
+    "star trek fan": {
+        "clothing": ["a red Starfleet TOS uniform", "a blue Starfleet TOS uniform", "a gold Starfleet TOS uniform"],
+        "pose": ["standing at attention", "saluting", "holding a phaser", "operating a starship console", "engaging in a tactical briefing", "in an empty holodeck", "looking out a starship window", "communicating with a tricorder", "performing a Vulcan salute", "in a classic Star Trek pose"],
+        "setting": ["on the bridge of a starship", "in a starship corridor", "at a starbase", "on an alien planet", "in a shuttlecraft"],
+        "emotion": ["determined", "focused", "curious", "confident", "alert", "analytical", "brave", "loyal", "compassionate", "resilient"]
+    },
+    "party girl": {
+        "clothing": ["small black dress", "sparkly cocktail dress", "sequin top and skirt", "glamorous evening gown", "colorful party outfit"],
+        "pose": ["dancing with arms raised", "holding a cocktail glass", "posing with friends", "sitting on a barstool", "laughing with head thrown back"],
+        "setting": ["nightclub with flashing lights", "rooftop party with city skyline", "beach bonfire party", "house party with music and decorations", "glamorous gala event"],
+        "emotion": ["excited", "joyful", "playful", "flirtatious", "energetic"]
+    },
+    "army": {
+        "clothing": ["military jacket and skirt", ],
+        "pose": ["standing at attention", "saluting", "marching in formation", "holding a rifle", "in a combat stance"],
+        "setting": ["on a military base", "in a training camp", "on a battlefield", "in a war zone", "at a military parade"],
+        "emotion": ["disciplined", "focused", "brave", "loyal", "resilient"],
     }
 }
 

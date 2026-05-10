@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kirsche API Server - Lazy Control Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .control-panel {
+            width: 400px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .control-panel h1 {
+            font-size: 24px;
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .form-group select,
+        .form-group textarea,
+        .form-group button {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+            max-height: 300px;
+        }
+
+        .reference-preview {
+            width: 100%;
+            max-height: 300px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            object-fit: contain;
+            background: #f5f5f5;
+        }
+
+        .reference-preview.hidden {
+            display: none;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .main-content h2 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 32px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .image-history {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .image-entry {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .image-entry .timestamp {
+            color: #888;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .image-entry .prompt {
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 5px;
+            font-style: italic;
+        }
+
+        .image-entry img {
+            width: 100%;
+            border-radius: 5px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 18px;
+            padding: 20px;
+        }
+
+        .error-message {
+            background: #ff4444;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: white;
+            padding: 40px;
+            font-size: 18px;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="control-panel">
+        <h1>Kirsche API Server<br>Lazy Control Panel</h1>
+        
+        <div class="form-group">
+            <label for="referenceSelect">Reference Image:</label>
+            <select id="referenceSelect">
+                <option value="">-- Select a reference image --</option>
+            </select>
+        </div>
+
+        <img id="referencePreview" class="reference-preview hidden" alt="Reference preview">
+
+        <div class="form-group">
+            <label for="promptInput">Prompt:</label>
+            <textarea id="promptInput" placeholder="Enter your prompt here..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <button id="randomPromptBtn">Generate Random Prompt</button>
+        </div>
+
+        <div class="form-group">
+            <button id="generatePromptBtn">Generate Prompt</button>
+        </div>
+
+        <div class="form-group">
+            <button id="generateImageBtn">Generate Image</button>
+        </div>
+
+        <div id="errorContainer"></div>
+    </div>
+
+    <div class="main-content">
+        <h2>Generated Images</h2>
+        <div id="imageHistory" class="image-history">
+            <div class="empty-state">No images generated yet. Start by selecting a reference image and entering a prompt!</div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const referenceSelect = document.getElementById('referenceSelect');
+        const referencePreview = document.getElementById('referencePreview');
+        const promptInput = document.getElementById('promptInput');
+        const randomPromptBtn = document.getElementById('randomPromptBtn');
+        const generatePromptBtn = document.getElementById('generatePromptBtn');
+        const generateImageBtn = document.getElementById('generateImageBtn');
+        const imageHistory = document.getElementById('imageHistory');
+        const errorContainer = document.getElementById('errorContainer');
+
+        // Filename to reference type mapping (matches server's FILE_NAME_BY_TYPE)
+        const filenameToType = {
+            'trad_wife.jpg': 'homemaker',
+            'workout.jpg': 'fitness enthusiast',
+            'snoop.jpg': 'snoop',
+            'sexy_spy.jpg': 'damsel in distress',
+            'star_trek.jpg': 'star trek fan',
+            'dance_club.jpg': 'party girl',
+            'army.jpg': 'army',
+        };
+
+        // Load reference images on page load
+        async function loadReferenceImages() {
+            try {
+                const response = await fetch('/refs');
+                if (!response.ok) {
+                    throw new Error('Failed to load reference images');
+                }
+                
+                const data = await response.json();
+                const images = data.images || [];
+                
+                // Clear and populate dropdown
+                referenceSelect.innerHTML = '<option value="">-- Select a reference image --</option>';
+                images.forEach(imageName => {
+                    const option = document.createElement('option');
+                    option.value = imageName;
+                    option.textContent = imageName;
+                    referenceSelect.appendChild(option);
+                });
+            } catch (error) {
+                showError('Failed to load reference images: ' + error.message);
+            }
+        }
+
+        // Update reference preview when selection changes
+        referenceSelect.addEventListener('change', function() {
+            if (this.value) {
+                referencePreview.src = `/refs/${this.value}`;
+                referencePreview.classList.remove('hidden');
+            } else {
+                referencePreview.classList.add('hidden');
+            }
+        });
+
+        // Generate random prompt
+        randomPromptBtn.addEventListener('click', async function() {
+            // Disable button during request
+            randomPromptBtn.disabled = true;
+            randomPromptBtn.textContent = 'Generating...';
+            clearError();
+
+            try {
+                const response = await fetch('/prompt/random', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to generate random prompt');
+                }
+
+                const data = await response.json();
+                promptInput.value = data.prompt;
+            } catch (error) {
+                showError('Failed to generate random prompt: ' + error.message);
+            } finally {
+                randomPromptBtn.disabled = false;
+                randomPromptBtn.textContent = 'Generate Random Prompt';
+            }
+        });
+
+        // Generate enhanced prompt
+        generatePromptBtn.addEventListener('click', async function() {
+            const referenceImage = referenceSelect.value;
+            const prompt = promptInput.value.trim();
+
+            if (!referenceImage) {
+                showError('Please select a reference image');
+                return;
+            }
+
+            if (!prompt) {
+                showError('Please enter a prompt');
+                return;
+            }
+
+            // Disable button during request
+            generatePromptBtn.disabled = true;
+            generatePromptBtn.textContent = 'Generating...';
+            clearError();
+
+            try {
+                const response = await fetch('/lazy/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        reference_image: referenceImage,
+                        prompt: prompt
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to generate prompt');
+                }
+
+                const data = await response.json();
+                promptInput.value = data.enhanced_prompt;
+            } catch (error) {
+                showError('Failed to generate prompt: ' + error.message);
+            } finally {
+                generatePromptBtn.disabled = false;
+                generatePromptBtn.textContent = 'Generate Prompt';
+            }
+        });
+
+        // Generate image
+        generateImageBtn.addEventListener('click', async function() {
+            const referenceImage = referenceSelect.value;
+            const prompt = promptInput.value.trim();
+
+            if (!referenceImage) {
+                showError('Please select a reference image');
+                return;
+            }
+
+            if (!prompt) {
+                showError('Please enter a prompt');
+                return;
+            }
+
+            // Disable button during request
+            generateImageBtn.disabled = true;
+            generateImageBtn.textContent = 'Generating Image...';
+            clearError();
+
+            try {
+                // Map filename to reference type using our lookup table
+                let referenceType = filenameToType[referenceImage];
+                
+                if (!referenceType) {
+                    // Fallback: use filename without extension
+                    console.warn(`No mapping found for ${referenceImage}, using filename as type`);
+                    referenceType = referenceImage.replace(/\.(jpg|jpeg|png|gif|webp|bmp)$/i, '');
+                }
+
+                const response = await fetch('/prompt/submit2', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        reference_type: referenceType,
+                        prompt: prompt
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to generate image');
+                }
+
+                const data = await response.json();
+                
+                // Add image to history
+                addImageToHistory(data.image_url, data.prompt);
+                
+                // Scroll to bottom to show new entry
+                setTimeout(() => {
+                    imageHistory.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                }, 100);
+            } catch (error) {
+                showError('Failed to generate image: ' + error.message);
+            } finally {
+                generateImageBtn.disabled = false;
+                generateImageBtn.textContent = 'Generate Image';
+            }
+        });
+
+        // Add image to history
+        function addImageToHistory(imageUrl, prompt) {
+            // Remove empty state if present
+            const emptyState = imageHistory.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+
+            // Create image entry
+            const entry = document.createElement('div');
+            entry.className = 'image-entry';
+            
+            const timestamp = new Date().toLocaleString();
+            
+            entry.innerHTML = `
+                <div class="timestamp">${timestamp}</div>
+                <div class="prompt">"${prompt}"</div>
+                <img src="${imageUrl}" alt="Generated image">
+            `;
+            
+            imageHistory.appendChild(entry);
+        }
+
+        // Show error message
+        function showError(message) {
+            errorContainer.innerHTML = `<div class="error-message">${message}</div>`;
+        }
+
+        // Clear error message
+        function clearError() {
+            errorContainer.innerHTML = '';
+        }
+
+        // Initialize
+        loadReferenceImages();
+    </script>
+</body>
+</html>
