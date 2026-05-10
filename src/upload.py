@@ -20,9 +20,7 @@ def main():
         print("Usage: python src/upload.py <file_path>")
         sys.exit(1)
 
-    # Example usage of upload_file_to_s3
-    file_path = os.path.join(os.path.curdir, sys.argv[1])  # Path to the file you want to upload
-
+    file_path = os.path.join(os.path.curdir, sys.argv[1])
     if upload_to_s3(file_path, s3_bucket, sys.argv[1], aws_access_key, aws_secret_key):
         print(f"File {file_path} uploaded to S3 bucket https://{s3_bucket}/{sys.argv[1]}")
     else:
