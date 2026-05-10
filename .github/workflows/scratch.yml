@@ -17,29 +17,36 @@ jobs:
       - name: Install dependencies
         run: pip install -r src/requirements.txt
 
-      - name: Create images directory
+      - name: DEBUG
         run: |
           pwd
           ls -l
+          ls -l src/
       
-      # - name: Run scratch
-      #   run: python src/scratch.py
-      #   env:
-      #     AWS_REGION: 'us-east-1'
-      #     GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-      #     UPLOADER_AWS_ACCESS_KEY: ${{ secrets.UPLOADER_AWS_ACCESS_KEY }}
-      #     UPLOADER_AWS_SECRET_KEY: ${{ secrets.UPLOADER_AWS_SECRET_KEY }}
-      #     UPLOADER_S3_BUCKET: ${{ vars.UPLOADER_S3_BUCKET }}
+      - name: Run scratch
+        run: python src/scratch.py
+        env:
+          AWS_REGION: 'us-east-1'
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          UPLOADER_AWS_ACCESS_KEY: ${{ secrets.UPLOADER_AWS_ACCESS_KEY }}
+          UPLOADER_AWS_SECRET_KEY: ${{ secrets.UPLOADER_AWS_SECRET_KEY }}
+          UPLOADER_S3_BUCKET: ${{ vars.UPLOADER_S3_BUCKET }}
 
-      # - name: upload to s3
-      #   run: |
-      #     pwd
-      #     ls images/*
-      #     ls images/* | head -n 1
-      #     python src/upload.py "$(ls images/* | head -n 1)"
-      #   env:
-      #     AWS_REGION: 'us-east-1'
-      #     GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-      #     UPLOADER_AWS_ACCESS_KEY: ${{ secrets.UPLOADER_AWS_ACCESS_KEY }}
-      #     UPLOADER_AWS_SECRET_KEY: ${{ secrets.UPLOADER_AWS_SECRET_KEY }}
-      #     UPLOADER_S3_BUCKET: ${{ vars.UPLOADER_S3_BUCKET }}
+      - name: DEBUG
+        run: |
+          pwd
+          ls -l
+          ls -l src/
+
+      - name: upload to s3
+        run: |
+          pwd
+          ls images/*
+          ls images/* | head -n 1
+          python src/upload.py "$(ls images/* | head -n 1)"
+        env:
+          AWS_REGION: 'us-east-1'
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          UPLOADER_AWS_ACCESS_KEY: ${{ secrets.UPLOADER_AWS_ACCESS_KEY }}
+          UPLOADER_AWS_SECRET_KEY: ${{ secrets.UPLOADER_AWS_SECRET_KEY }}
+          UPLOADER_S3_BUCKET: ${{ vars.UPLOADER_S3_BUCKET }}
