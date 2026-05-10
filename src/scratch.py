@@ -128,6 +128,7 @@ def main():
             "sexy_spy": "damsel in distress",
             "star_trek": "star trek fan",
             "army": "army",
+            "dance_club": "party girl",
         }
         
         setting = random_sample(PROMPT_DATA[prompt_by_file_name[file_name]]["setting"])
