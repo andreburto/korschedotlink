@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kirsche Cube Screensaver</title>
+    <link rel="icon" type="image/x-icon" href="https://korsche.link/kirsche/kirsche_favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #deedee;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #cube-container {
+            position: absolute;
+            width: 192px;
+            height: 184px;
+            display: none;
+        }
+
+        #cube-container img {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div id="cube-container">
+        <img src="https://korsche.link/bounce/kirsche_cube.png" alt="Kirsche Cube">
+    </div>
+
+    <script>
+        const munya = new Audio("https://korsche.link/bounce/MUNYA.mp3");
+        const cube = document.getElementById('cube-container');
+        const cubeWidth = 192;
+        const cubeHeight = 184;
+        
+        // Get screen dimensions
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
+        
+        // Initial position: top-left quarter of screen
+        let x = Math.random() * (screenWidth / 2);
+        let y = Math.random() * (screenHeight / 2);
+        
+        // Random initial direction (one of four diagonals)
+        const directions = [
+            { dx: 1, dy: 1 },   // down-right
+            { dx: 1, dy: -1 },  // up-right
+            { dx: -1, dy: 1 },  // down-left
+            { dx: -1, dy: -1 }  // up-left
+        ];
+        const initialDirection = directions[Math.floor(Math.random() * directions.length)];
+        let dx = initialDirection.dx;
+        let dy = initialDirection.dy;
+        
+        // Speed in pixels per frame
+        const speed = 2;
+        
+        // Corner detection margin (in pixels)
+        const cornerMargin = 10;
+        
+        // Track if we were in a corner last frame
+        let wasInCorner = false;
+        
+        function isInCorner(x, y) {
+            const left = x <= cornerMargin;
+            const right = x >= screenWidth - cubeWidth - cornerMargin;
+            const top = y <= cornerMargin;
+            const bottom = y >= screenHeight - cubeHeight - cornerMargin;
+            
+            return (left && top) || (left && bottom) || (right && top) || (right && bottom);
+        }
+        
+        function animate() {
+            // Update position
+            x += dx * speed;
+            y += dy * speed;
+            
+            // Check for edge collisions
+            if (x <= 0) {
+                x = 0;
+                dx = 1;
+            } else if (x >= screenWidth - cubeWidth) {
+                x = screenWidth - cubeWidth;
+                dx = -1;
+            }
+            
+            if (y <= 0) {
+                y = 0;
+                dy = 1;
+            } else if (y >= screenHeight - cubeHeight) {
+                y = screenHeight - cubeHeight;
+                dy = -1;
+            }
+            
+            // Check for corner and log "Munya!"
+            const inCorner = isInCorner(x, y);
+            if (inCorner && !wasInCorner) {
+                console.log('Munya!');
+                munya.currentTime = 0;
+                munya.play().catch(err => {
+                    console.log('Audio play failed:', err);
+                });
+            }
+            wasInCorner = inCorner;
+            
+            // Apply position
+            cube.style.left = x + 'px';
+            cube.style.top = y + 'px';
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // Create START button
+        const startButton = document.createElement('button');
+        startButton.textContent = 'START';
+        startButton.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 20px 40px; font-size: 24px; font-weight: bold; cursor: pointer; z-index: 1000; background: white; border: 3px solid #333; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);';
+        document.body.appendChild(startButton);
+        
+        startButton.addEventListener('click', () => {
+            // Prime the audio element on user interaction
+            munya.play().then(() => {
+                munya.pause();
+                munya.currentTime = 0;
+            }).catch(err => {
+                console.log('Audio priming failed:', err);
+            });
+            
+            // Remove the button
+            startButton.remove();
+            
+            // Show the cube
+            cube.style.display = 'block';
+            
+            // Start animation
+            animate();
+        });
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            location.reload();
+        });
+    </script>
+</body>
+</html>

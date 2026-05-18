@@ -2,7 +2,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 4.0"
+      version = "~> 5.0"
     }
   }
 
@@ -105,4 +105,29 @@ resource "aws_s3_object" "index" {
   key          = "index.html"
   source       = "index.html"
   etag        = filemd5("index.html")
+}
+
+# Bounce source files.
+resource "aws_s3_object" "bounce_index" {
+  content_type = "text/html"
+  bucket       = aws_s3_bucket.korsche.id
+  key          = "bounce/index.html"
+  source       = "../bounce/index.html"
+  etag        = filemd5("../bounce/index.html")
+}
+
+resource "aws_s3_object" "bounce_image" {
+  content_type = "image/png"
+  bucket       = aws_s3_bucket.korsche.id
+  key          = "bounce/kirsche_cube.png"
+  source       = "../bounce/kirsche_cube.png"
+  etag        = filemd5("../bounce/kirsche_cube.png")
+}
+
+resource "aws_s3_object" "bounce_munya" {
+  content_type = "audio/mpeg"
+  bucket       = aws_s3_bucket.korsche.id
+  key          = "bounce/MUNYA.mp3"
+  source       = "../bounce/MUNYA.mp3"
+  etag        = filemd5("../bounce/MUNYA.mp3")
 }

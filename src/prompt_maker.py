@@ -310,6 +310,12 @@ PROMPT_DATA = {
         "pose": ["standing at attention", "saluting", "marching in formation", "holding a rifle", "in a combat stance"],
         "setting": ["on a military base", "in a training camp", "on a battlefield", "in a war zone", "at a military parade"],
         "emotion": ["disciplined", "focused", "brave", "loyal", "resilient"],
+    },
+    "maid": {
+        "clothing": ["a maid uniform", ],
+        "pose": ["holding a feather duster", "dusting shelves of toys", "picking up toy blocks", "dusting a shelf"],
+        "setting": ["in a bachelor's bedroom", "in a man cave filled with toys", "in a playroom", "in a vintage parlor"],
+        "emotion": ["diligent", "attentive", "worried", "overwhelmed", "careful", ],
     }
 }
 

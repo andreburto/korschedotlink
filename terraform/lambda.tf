@@ -7,7 +7,7 @@ data "archive_file" "korsche" {
 resource "aws_lambda_function" "korsche" {
   function_name = "korsche"
   handler = "index.lambda_handler"
-  runtime = "python3.10"
+  runtime = "python3.11"
   role = aws_iam_role.lambda.arn
   filename = data.archive_file.korsche.output_path
   source_code_hash = data.archive_file.korsche.output_base64sha256
