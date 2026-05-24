@@ -22,10 +22,20 @@
             left: 50%;
             transform: translate(-50%, -50%);
         }
+        .title-text {
+            font-size: 48px;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            position: absolute;
+            color: white;
+            text-align: center;
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
     </style>
 </head>
 <body>
-    <h1 style="font-size: 48px; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 20; color: white;">Welcome to Zombo-Korsche</h1>
+    <h1 class="title-text">Welcome to Zombo-Korsche</h1>
     <img src="kirsche_beach02.png" alt="Centered Image" class="centered-image">
     <script>
         // Function to generate random RGB color
@@ -39,7 +49,7 @@
         function calculateGradient(sVal, eVal, step, maxSteps) {
             const ratio = step / (maxSteps - 1);
             const value = Math.floor(sVal + ratio * (eVal - sVal));
-            console.log(`Math.floor(${sVal} + ${ratio} * (${eVal} - ${sVal})) = ${value}`);
+            // console.log(`Math.floor(${sVal} + ${ratio} * (${eVal} - ${sVal})) = ${value}`);
             return value;
         }
 
@@ -90,6 +100,37 @@
                 eClr = sClr;
             }
         }, 5);
+
+        const titleText = document.querySelector('.title-text');
+        const titleChars = titleText.textContent.split('');
+        const titleCharColors = []
+        titleText.textContent = ''; // Clear the original text
+        titleChars.forEach(char => {
+            const span = document.createElement('span');
+            const charColor = getRandomColor();
+            span.textContent = char;
+            span.style.color = `rgb(${charColor[0]}, ${charColor[1]}, ${charColor[2]})`;
+            titleText.appendChild(span);
+            titleCharColors.push(charColor); // Start with white color for each character
+        });
+        const titleSpans = titleText.querySelectorAll('span');
+        setInterval(() => {
+            titleCharColors.forEach((color, index) => {
+                if (index < titleCharColors.length - 1) {
+                    titleCharColors[index] = titleCharColors[index + 1]; // Shift color from the next character
+                    const r = titleCharColors[index][0];
+                    const g = titleCharColors[index][1];
+                    const b = titleCharColors[index][2];
+                    titleSpans[index].style.color = `rgb(${r}, ${g}, ${b})`;
+                } else {
+                    const newColor = getRandomColor();
+                    titleCharColors[index] = newColor;
+                    titleSpans[index].style.color = `rgb(${newColor[0]}, ${newColor[1]}, ${newColor[2]})`;
+                }
+            });
+        }, 500);
+        
+
     </script>
 </body>
 </html>
