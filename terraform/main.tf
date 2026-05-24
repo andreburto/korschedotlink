@@ -131,3 +131,20 @@ resource "aws_s3_object" "bounce_munya" {
   source       = "../bounce/MUNYA.mp3"
   etag        = filemd5("../bounce/MUNYA.mp3")
 }
+
+# Zombo-Korsche
+resource "aws_s3_object" "zombo_korsche_index" {
+  content_type = "text/html"
+  bucket       = aws_s3_bucket.korsche.id
+  key          = "zombo/index.html"
+  source       = "../zombo/index.html"
+  etag        = filemd5("../zombo/index.html")
+}
+
+resource "aws_s3_object" "zombo_korsche_image" {
+  content_type = "image/png"
+  bucket       = aws_s3_bucket.korsche.id
+  key          = "zombo/kirsche_beach02.png"
+  source       = "../zombo/kirsche_beach02.png"
+  etag        = filemd5("../zombo/kirsche_beach02.png")
+}

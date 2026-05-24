@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanline</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        .pixel {
+            height: 1px;
+            width: 100%;
+            background-color: #000000; /* Start with all pixels black */
+            z-index: 10;
+        }
+        .centered-image {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+<body>
+    <h1 style="font-size: 48px; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 20; color: white;">Welcome to Zombo-Korsche</h1>
+    <img src="kirsche_beach02.png" alt="Centered Image" class="centered-image">
+    <script>
+        // Function to generate random RGB color
+        function getRandomColor() {
+            const r = Math.floor(Math.random() * 256);
+            const g = Math.floor(Math.random() * 256);
+            const b = Math.floor(Math.random() * 256);
+            return [r, g, b];
+        }
+
+        function calculateGradient(sVal, eVal, step, maxSteps) {
+            const ratio = step / (maxSteps - 1);
+            const value = Math.floor(sVal + ratio * (eVal - sVal));
+            console.log(`Math.floor(${sVal} + ${ratio} * (${eVal} - ${sVal})) = ${value}`);
+            return value;
+        }
+
+        // Get the viewport height
+        const height = window.innerHeight;
+        const body = document.body;
+        const colorChangeInterval = Math.floor(height / 3); // Change color every one-third of document height
+        
+        // Create a 1px div for each pixel height
+        for (let i = 0; i < height; i++) {
+            const pixel = document.createElement('div');
+            pixel.className = 'pixel';
+            body.appendChild(pixel);
+        }
+        
+        // Track current black pixel position
+        const pixels = document.querySelectorAll('.pixel');
+        
+        // Counter and color variables
+        let counter = 0;
+        let sClr = [];
+        let eClr = getRandomColor();
+        
+        // Move the black pixel down every 0.1 seconds
+        setInterval(() => {
+            // When counter is 0, generate new random color
+            if (counter === 0) {
+                sClr = getRandomColor();
+            }
+
+            for (let i = pixels.length - 1; i > 0; i--) {
+              pixels[i].style.backgroundColor = pixels[i - 1].style.backgroundColor;
+            }
+
+            if (counter === 0) {
+                pixels[0].style.backgroundColor = `rgb(${eClr[0]}, ${eClr[1]}, ${eClr[2]})`;
+            } else {
+                const red = calculateGradient(eClr[0], sClr[0], counter, colorChangeInterval);
+                const green = calculateGradient(eClr[1], sClr[1], counter, colorChangeInterval);
+                const blue = calculateGradient(eClr[2], sClr[2], counter, colorChangeInterval);
+                pixels[0].style.backgroundColor = `rgb(${red}, ${green}, ${blue})`;
+            }
+            
+            // Increment counter and reset at colorChangeInterval
+            counter++;
+            if (counter >= colorChangeInterval) {
+                counter = 0;
+                eClr = sClr;
+            }
+        }, 5);
+    </script>
+</body>
+</html>
