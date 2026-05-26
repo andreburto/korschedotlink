@@ -107,6 +107,15 @@ resource "aws_s3_object" "index" {
   etag        = filemd5("index.html")
 }
 
+# Load the source files.
+resource "aws_s3_object" "kirsche_index" {
+  content_type = "text/html"
+  bucket       = aws_s3_bucket.korsche.id
+  key          = "kirsche/index.html"
+  source       = "index.html"
+  etag        = filemd5("index.html")
+}
+
 # Bounce source files.
 resource "aws_s3_object" "bounce_index" {
   content_type = "text/html"
