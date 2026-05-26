@@ -99,15 +99,6 @@ resource "aws_route53_record" "korsche" {
 }
 
 # Load the source files.
-resource "aws_s3_object" "index" {
-  content_type = "text/html"
-  bucket       = aws_s3_bucket.korsche.id
-  key          = "index.html"
-  source       = "index.html"
-  etag        = filemd5("index.html")
-}
-
-# Load the source files.
 resource "aws_s3_object" "kirsche_index" {
   content_type = "text/html"
   bucket       = aws_s3_bucket.korsche.id
@@ -145,7 +136,7 @@ resource "aws_s3_object" "bounce_munya" {
 resource "aws_s3_object" "zombo_korsche_index" {
   content_type = "text/html"
   bucket       = aws_s3_bucket.korsche.id
-  key          = "zombo/index.html"
+  key          = "index.html"
   source       = "../zombo/index.html"
   etag        = filemd5("../zombo/index.html")
 }
@@ -153,7 +144,7 @@ resource "aws_s3_object" "zombo_korsche_index" {
 resource "aws_s3_object" "zombo_korsche_image" {
   content_type = "image/png"
   bucket       = aws_s3_bucket.korsche.id
-  key          = "zombo/kirsche_beach02.png"
+  key          = "kirsche_beach02.png"
   source       = "../zombo/kirsche_beach02.png"
   etag        = filemd5("../zombo/kirsche_beach02.png")
 }

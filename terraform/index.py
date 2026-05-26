@@ -9,6 +9,13 @@ logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler(sys.stdout))
 
 
+def ignore_extensions(filename):
+    for ext in ['ico', 'html']:
+        if filename.lower().endswith(ext):
+            return True
+    return False
+
+
 def list_s3_files(bucket_name, prefix):
     s3 = boto3.client('s3')
     response = s3.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
@@ -16,7 +23,7 @@ def list_s3_files(bucket_name, prefix):
     if 'Contents' in response:
         files = [
             f"/{obj['Key']}" for obj in response['Contents'] 
-            if obj['Key'] != prefix and not obj['Key'].lower().endswith('ico')]
+            if obj['Key'] != prefix and not ignore_extensions(obj['Key'])]
     return files
 
 

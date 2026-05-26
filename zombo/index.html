@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to Zombo-Korsche</title>
+    <link rel="icon" type="image/x-icon" href="https://korsche.link/kirsche/kirsche_favicon.ico">
     <style>
         body {
             margin: 0;
@@ -24,7 +25,7 @@
         }
         .title-text {
             font-size: 48px;
-            top: 10px;
+            top: -15px;
             left: 50%;
             transform: translateX(-50%);
             position: absolute;
@@ -32,11 +33,36 @@
             text-align: center;
             text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
         }
+        .button-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 100px;
+            z-index: 20;
+        }
+        .custom-button {
+            background-color: blue;
+            color: yellow;
+            border: 3px solid yellow;
+            font-size: 24px;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .custom-button:hover {
+            background-color: darkblue;
+        }
     </style>
 </head>
 <body>
     <h1 class="title-text">Welcome to Zombo-Korsche</h1>
     <img src="kirsche_beach02.png" alt="Centered Image" class="centered-image">
+    <div class="button-container">
+        <button class="custom-button" onclick="window.location.href='https://korsche.link/bounce/index.html'">Korche Bounce</button>
+        <button class="custom-button" onclick="window.location.href='https://korsche.link/kirsche/index.html'">Kirsche Gallery</button>
+    </div>
     <script>
         // Function to generate random RGB color
         function getRandomColor() {
@@ -129,8 +155,7 @@
                 }
             });
         }, 500);
-        
-
     </script>
 </body>
 </html>
+<!-- Code here: https://github.com/andreburto/korschedotlink -->
