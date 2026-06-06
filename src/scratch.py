@@ -16,7 +16,7 @@ from time import sleep
 from google import genai
 from google.genai import types
 
-from korsche_sync import DEFAULT_GEMINI_PROMPT_MODEL, enhance_prompt_with_gemini
+from korsche_sync import DEFAULT_GEMINI_IMAGE_MODEL, DEFAULT_GEMINI_PROMPT_MODEL, enhance_prompt_with_gemini
 from prompt_maker import PROMPT_DATA, random_sample
 
 REFS_DIR = Path("refs")
@@ -79,7 +79,7 @@ def generate_kirsche_image(reference_image_path, setting, pose):
     
     # Generate the image
     response = client.models.generate_content(
-        model="gemini-2.5-flash-image",
+        model=DEFAULT_GEMINI_IMAGE_MODEL,
         contents=[
             types.Part.from_bytes(
                 data=reference_image_data,
