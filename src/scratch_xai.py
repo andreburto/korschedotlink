@@ -7,7 +7,6 @@ production use and may be deleted or refactored in the future.
 
 import base64
 import os
-import random
 import requests
 import sys
 import uuid
@@ -18,6 +17,7 @@ from time import sleep
 from xai_sdk.chat import user
 
 from prompt_maker import PROMPT_DATA, random_sample
+from utils import REFS_DIR, PROMPT_BY_FILE_NAME, get_random_reference_image
 
 GROK_TEXT_MODEL = "grok-4.5-latest"
 GROK_IMAGE_MODEL = "grok-imagine-image-quality"
@@ -92,17 +92,6 @@ def main():
     """
     Main function to run the scratch app workflow.
     """
-    prompt_by_file_name = {
-        "trad_wife": "homemaker",
-        "workout": "fitness enthusiast",
-        "snoop": "snoop",
-        "sexy_spy": "damsel in distress",
-        "star_trek": "star trek fan",
-        "army": "army",
-        "dance_club": "party girl",
-        "maid": "maid",
-    }
-
     try:
         # Initialize the client
         client = xai_sdk.Client(api_key=os.getenv("XAI_API_KEY"))
@@ -121,8 +110,8 @@ def main():
         file_name = str(reference_image).split(os.path.sep)[-1].split(".")[0]
         print(f"Reference image file name (without extension): {file_name}")
         
-        setting = random_sample(PROMPT_DATA[prompt_by_file_name[file_name]]["setting"])
-        pose = random_sample(PROMPT_DATA[prompt_by_file_name[file_name]]["pose"])
+        setting = random_sample(PROMPT_DATA[PROMPT_BY_FILE_NAME[file_name]]["setting"])
+        pose = random_sample(PROMPT_DATA[PROMPT_BY_FILE_NAME[file_name]]["pose"])
         print(f"Using setting: {setting} and pose: {pose} for prompt.")
 
         image_prompt = expand_prompt(client, setting, pose)
