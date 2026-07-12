@@ -4,9 +4,7 @@ Scratch app for testing Kirsche image generation with Gemini.
 This is a prototype app for testing new ideas. It is not intended for 
 production use and may be deleted or refactored in the future.
 """
-
 import os
-import random
 import sys
 import uuid
 
@@ -18,32 +16,7 @@ from google.genai import types
 
 from korsche_sync import DEFAULT_GEMINI_IMAGE_MODEL, DEFAULT_GEMINI_PROMPT_MODEL, enhance_prompt_with_gemini
 from prompt_maker import PROMPT_DATA, random_sample
-
-REFS_DIR = Path("refs")
-
-
-def get_random_reference_image():
-    """
-    Pick a random image from the refs directory.
-    
-    Returns:
-        Path: Path to a random reference image file.
-    
-    Raises:
-        ValueError: If no images are found in the refs directory.
-    """
-    # refs_dir is already defined globally
-    image_extensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"]
-    
-    image_files = [
-        f for f in REFS_DIR.iterdir() 
-        if f.is_file() and f.suffix.lower() in image_extensions
-    ]
-    
-    if not image_files:
-        raise ValueError("No images found in refs directory")
-    
-    return random.choice(image_files)
+from utils import REFS_DIR, PROMPT_BY_FILE_NAME, get_random_reference_image
 
 
 def generate_kirsche_image(reference_image_path, setting, pose):
@@ -118,16 +91,7 @@ def main():
     """
     Main function to run the scratch app workflow.
     """
-    prompt_by_file_name = {
-        "trad_wife": "homemaker",
-        "workout": "fitness enthusiast",
-        "snoop": "snoop",
-        "sexy_spy": "damsel in distress",
-        "star_trek": "star trek fan",
-        "army": "army",
-        "dance_club": "party girl",
-        "maid": "maid",
-    }
+
 
     try:
         if sys.argv and len(sys.argv) > 1:
@@ -144,8 +108,8 @@ def main():
         file_name = str(reference_image).split(os.path.sep)[-1].split(".")[0]
         print(f"Reference image file name (without extension): {file_name}")
         
-        setting = random_sample(PROMPT_DATA[prompt_by_file_name[file_name]]["setting"])
-        pose = random_sample(PROMPT_DATA[prompt_by_file_name[file_name]]["pose"])
+        setting = random_sample(PROMPT_DATA[PROMPT_BY_FILE_NAME[file_name]]["setting"])
+        pose = random_sample(PROMPT_DATA[PROMPT_BY_FILE_NAME[file_name]]["pose"])
         print(f"Using setting: {setting} and pose: {pose} for prompt.")
         
         for _ in range(3):
