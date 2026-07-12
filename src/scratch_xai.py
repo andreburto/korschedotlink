@@ -19,33 +19,8 @@ from xai_sdk.chat import user
 
 from prompt_maker import PROMPT_DATA, random_sample
 
-REFS_DIR = Path("refs")
 GROK_TEXT_MODEL = "grok-4.5-latest"
 GROK_IMAGE_MODEL = "grok-imagine-image-quality"
-
-
-def get_random_reference_image():
-    """
-    Pick a random image from the refs directory.
-    
-    Returns:
-        Path: Path to a random reference image file.
-    
-    Raises:
-        ValueError: If no images are found in the refs directory.
-    """
-    # refs_dir is already defined globally
-    image_extensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"]
-    
-    image_files = [
-        f for f in REFS_DIR.iterdir() 
-        if f.is_file() and f.suffix.lower() in image_extensions
-    ]
-    
-    if not image_files:
-        raise ValueError("No images found in refs directory")
-    
-    return random.choice(image_files)
 
 
 def expand_prompt(client, setting, pose):

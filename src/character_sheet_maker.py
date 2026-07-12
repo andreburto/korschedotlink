@@ -16,11 +16,8 @@ from google import genai
 from google.genai import types
 
 from korsche_sync import DEFAULT_GEMINI_PROMPT_MODEL, DEFAULT_GEMINI_IMAGE_MODEL
-from prompt_maker import PROMPT_DATA
 from scratch import get_random_reference_image
-
-
-REFS_DIR = Path("refs")
+from utils import get_random_reference_image
 
 
 def generate_new_profession():
