@@ -13,7 +13,6 @@ import logging
 import os
 import requests
 import sys
-import uuid
 import xai_sdk
 
 from datetime import datetime

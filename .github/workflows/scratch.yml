@@ -1,4 +1,4 @@
-name: Korsche Scratch
+name: Dual Korsche Scratch
 
 on:
   workflow_dispatch:  # Allows manual trigger
@@ -31,19 +31,25 @@ jobs:
         run: pip install -r src/requirements.txt
       
       - name: Run scratch
-        run: python src/scratch.py ${{ github.event.inputs.reference_image }}
+        run: python src/dual_generate.py ${{ github.event.inputs.reference_image }}
         env:
           AWS_REGION: 'us-east-1'
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           UPLOADER_AWS_ACCESS_KEY: ${{ secrets.UPLOADER_AWS_ACCESS_KEY }}
           UPLOADER_AWS_SECRET_KEY: ${{ secrets.UPLOADER_AWS_SECRET_KEY }}
           UPLOADER_S3_BUCKET: ${{ vars.UPLOADER_S3_BUCKET }}
+          XAI_API_KEY: ${{ vars.XAI_API_KEY }}
+
+      - name: Display logs
+        run: cat $(ls dual_*.log | tail -n 1)
+
+      - name: List generated images
+        run: ls images/
 
       - name: upload to s3
         run: python src/upload.py "$(ls images/* | head -n 1)"
         env:
           AWS_REGION: 'us-east-1'
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           UPLOADER_AWS_ACCESS_KEY: ${{ secrets.UPLOADER_AWS_ACCESS_KEY }}
           UPLOADER_AWS_SECRET_KEY: ${{ secrets.UPLOADER_AWS_SECRET_KEY }}
           UPLOADER_S3_BUCKET: ${{ vars.UPLOADER_S3_BUCKET }}
