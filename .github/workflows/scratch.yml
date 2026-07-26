@@ -41,13 +41,13 @@ jobs:
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
 
       - name: Display logs
-        run: cat $(ls dual_*.log | tail -n 1)
+        run: cat $(ls src/dual_*.log | tail -n 1)
 
       - name: List generated images
         run: ls images/
 
       - name: upload to s3
-        run: python src/upload.py "$(ls images/* | head -n 1)"
+        run: ls images/ | xargs -I {} python src/upload.py images/{}
         env:
           AWS_REGION: 'us-east-1'
           UPLOADER_AWS_ACCESS_KEY: ${{ secrets.UPLOADER_AWS_ACCESS_KEY }}
