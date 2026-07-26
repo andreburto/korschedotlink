@@ -17,7 +17,6 @@ import xai_sdk
 
 from datetime import datetime
 from pathlib import Path
-from time import sleep
 from xai_sdk.chat import user
 
 from google import genai

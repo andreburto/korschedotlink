@@ -1,4 +1,5 @@
+asyncio
+boto3
 google-genai
 pillow
-boto3
 xai_sdk
