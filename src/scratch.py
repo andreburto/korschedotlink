@@ -92,7 +92,6 @@ def main():
     Main function to run the scratch app workflow.
     """
 
-
     try:
         if sys.argv and len(sys.argv) > 1:
             reference_image = [
