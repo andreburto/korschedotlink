@@ -6,12 +6,11 @@ from korsche_sync import upload_to_s3
 
 def main():
     # Get environment variables
-    api_key = os.getenv("GEMINI_API_KEY")
     aws_access_key = os.getenv("UPLOADER_AWS_ACCESS_KEY")
     aws_secret_key = os.getenv("UPLOADER_AWS_SECRET_KEY")
     s3_bucket = os.getenv("UPLOADER_S3_BUCKET")
 
-    if not all([api_key, aws_access_key, aws_secret_key, s3_bucket]):
+    if not all([aws_access_key, aws_secret_key, s3_bucket]):
         raise ValueError("One or more required environment variables are not set")
     
     print(sys.argv)

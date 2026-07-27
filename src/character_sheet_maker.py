@@ -15,7 +15,7 @@ from google import genai
 from google.genai import types
 
 from korsche_sync import DEFAULT_GEMINI_PROMPT_MODEL, DEFAULT_GEMINI_IMAGE_MODEL
-from utils import get_random_reference_image
+from utils import REFS_DIR, get_random_reference_image
 
 
 def generate_new_profession():
