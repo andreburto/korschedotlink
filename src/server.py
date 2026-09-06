@@ -24,12 +24,12 @@ from korsche_sync import (
     generate_prompt,
     enhance_prompt_with_gemini,
     generate_filename,
-    generate_image,
-    DEFAULT_GEMINI_PROMPT_MODEL,
-    DEFAULT_GEMINI_IMAGE_MODEL
+    generate_image
 )
 
 from prompt_maker import generate_prompt as generate_prompt2, PROMPT_DATA
+
+from utils import GEMINI_TEXT_MODEL, GEMINI_IMAGE_MODEL
 
 DEFAULT_FILE_NAME = "trad_wife.jpg"
 FILE_NAME_BY_TYPE = {
@@ -60,8 +60,8 @@ def get_config():
         'thumbnail_dir': os.getenv('THUMBNAIL_DIR', 'thumbnails'),
         'static_dir': os.getenv('STATIC_DIR', 'static'),
         'gemini_api_key': os.getenv('GEMINI_API_KEY', ''),
-        'gemini_prompt_model': os.getenv('GEMINI_PROMPT_MODEL', DEFAULT_GEMINI_PROMPT_MODEL),
-        'gemini_image_model': os.getenv('GEMINI_IMAGE_MODEL', DEFAULT_GEMINI_IMAGE_MODEL),
+        'gemini_prompt_model': os.getenv('GEMINI_TEXT_MODEL', GEMINI_TEXT_MODEL),
+        'gemini_image_model': os.getenv('GEMINI_IMAGE_MODEL', GEMINI_IMAGE_MODEL),
     }
 
 

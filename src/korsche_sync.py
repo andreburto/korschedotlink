@@ -25,6 +25,8 @@ from google import genai
 from PIL import Image
 from time import sleep
 
+from utils import GEMINI_IMAGE_MODEL, GEMINI_TEXT_MODEL
+
 # ==============================================================================
 # Constants and Configuration
 # ==============================================================================
@@ -167,8 +169,6 @@ emotions_elements = [
     "mysterious"
 ]
 
-DEFAULT_GEMINI_PROMPT_MODEL = "gemini-2.5-flash"
-DEFAULT_GEMINI_IMAGE_MODEL = "gemini-2.5-flash-image"
 DIVIDER = "=" * 60
 
 
@@ -244,7 +244,7 @@ def enhance_prompt_with_gemini(prompt, model, api_key):
 def make_new_prompt():
     """Generate, enhance, and return a new prompt."""
     # Setup Gemini model and API key
-    model = os.getenv("GEMINI_PROMPT_MODEL", DEFAULT_GEMINI_PROMPT_MODEL)
+    model = os.getenv("GEMINI_TEXT_MODEL", GEMINI_TEXT_MODEL)
     api_key = os.getenv("GEMINI_API_KEY")
     
     # Generate the base prompt
@@ -288,7 +288,7 @@ def generate_image(prompt: str, save_file: str = "images", api_key: str = None) 
     
     # Generate the image using Nano Banana model
     response = client.models.generate_content(
-        model=os.getenv("GEMINI_IMAGE_MODEL", DEFAULT_GEMINI_IMAGE_MODEL),
+        model=os.getenv("GEMINI_IMAGE_MODEL", GEMINI_IMAGE_MODEL),
         contents=prompt
     )
           
@@ -335,7 +335,7 @@ def send_to_gemini(image_path: str, api_key: str, prompt: str):
         image_data = f.read()
     
     response = client.models.generate_content(
-        model=os.getenv("GEMINI_IMAGE_MODEL", DEFAULT_GEMINI_IMAGE_MODEL),
+        model=os.getenv("GEMINI_IMAGE_MODEL", GEMINI_IMAGE_MODEL),
         contents=[
             prompt, 
             types.Part.from_bytes(data=image_data, mime_type="image/png")])
@@ -481,7 +481,7 @@ def favico(kirsche_description: str, output_dir: str = "images"):
     try:
         # Generate the image using Gemini
         response = client.models.generate_content(
-            model=os.getenv("GEMINI_IMAGE_MODEL", DEFAULT_GEMINI_IMAGE_MODEL),
+            model=os.getenv("GEMINI_IMAGE_MODEL", GEMINI_IMAGE_MODEL),
             contents=favicon_prompt
         )
 
@@ -634,7 +634,7 @@ def main():
             save_file = f"images/{generate_filename()}"
             enhanced_prompt = enhance_prompt_with_gemini(
                 ' '.join(sys.argv[2:]), 
-                model=os.getenv("GEMINI_PROMPT_MODEL", DEFAULT_GEMINI_PROMPT_MODEL), 
+                model=os.getenv("GEMINI_TEXT_MODEL", GEMINI_TEXT_MODEL), 
                 api_key=gemini_api_key)
             generate_image(
                 prompt=KIRSCHE_DESCRIPTION.format(enhanced_prompt),

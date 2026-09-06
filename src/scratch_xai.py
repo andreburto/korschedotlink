@@ -16,11 +16,9 @@ from pathlib import Path
 from time import sleep
 from xai_sdk.chat import user
 
-from prompt_maker import PROMPT_DATA, random_sample
-from utils import REFS_DIR, PROMPT_BY_FILE_NAME, get_random_reference_image
-
-GROK_TEXT_MODEL = "grok-4.5-latest"
-GROK_IMAGE_MODEL = "grok-imagine-image-quality"
+from prompt_maker import PROMPT_DATA
+from utils import (GROK_IMAGE_MODEL, GROK_TEXT_MODEL, REFS_DIR, PROMPT_BY_FILE_NAME, 
+                   get_random_reference_image, random_sample)
 
 
 def expand_prompt(client, setting, pose):

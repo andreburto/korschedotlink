@@ -16,6 +16,12 @@ PROMPT_BY_FILE_NAME = {
         "maid": "maid",
     }
 
+# Model configurations
+GROK_TEXT_MODEL = "grok-4.5-latest"
+GROK_IMAGE_MODEL = "grok-imagine-image-quality"
+GEMINI_TEXT_MODEL = "gemini-2.5-flash"
+GEMINI_IMAGE_MODEL = "gemini-2.5-flash-image"
+
 
 def get_random_reference_image():
     """
@@ -40,3 +46,14 @@ def get_random_reference_image():
     
     return random.choice(image_files)
 
+
+def random_sample(item_list):
+    """
+    Return a random sample from the given list.
+
+    Args:
+        item_list (list): A list of items to sample from.
+    Returns:
+        A random item from the list.
+    """
+    return random.choice(random.sample(item_list, len(item_list)))
