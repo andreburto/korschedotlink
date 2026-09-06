@@ -12,20 +12,18 @@ Consolidated from:
 - list_models.py
 """
 
-import boto3
 import io
 import os
 import random
 import sys
 
-from botocore.exceptions import ClientError
 from datetime import datetime
 from google.genai import types
 from google import genai
 from PIL import Image
 from time import sleep
 
-from utils import GEMINI_IMAGE_MODEL, GEMINI_TEXT_MODEL
+from utils import GEMINI_IMAGE_MODEL, GEMINI_TEXT_MODEL, upload_to_s3
 
 # ==============================================================================
 # Constants and Configuration
@@ -540,64 +538,6 @@ def favico(kirsche_description: str, output_dir: str = "images"):
         
     except Exception as e:
         print(f"✗ Error: {e}")
-        return False
-
-
-# ==============================================================================
-# S3 Upload Functions
-# ==============================================================================
-def upload_to_s3(local_file_path, bucket_name, s3_key, aws_access_key, aws_secret_key):
-    """
-    Upload a file to an S3 bucket.
-    
-    Args:
-        local_file_path: Path to the local file to upload
-        bucket_name: Name of the S3 bucket
-        s3_key: S3 object key (path within the bucket)
-        aws_access_key: AWS access key ID
-        aws_secret_key: AWS secret access key
-    
-    Returns:
-        bool: True if upload was successful, False otherwise
-    """
-    try:
-        # Create S3 client with provided credentials
-        s3_client = boto3.client(
-            's3',
-            aws_access_key_id=aws_access_key,
-            aws_secret_access_key=aws_secret_key
-        )
-        
-        # Determine content type based on file extension
-        content_type = 'image/png'
-        if local_file_path.endswith('.ico'):
-            content_type = 'image/x-icon'
-        
-        # Upload the file
-        print(f"Uploading {local_file_path} to s3://{bucket_name}/{s3_key}")
-        s3_client.upload_file(
-            local_file_path,
-            bucket_name,
-            s3_key,
-            ExtraArgs={
-                'ContentType': content_type,
-                'ACL': 'public-read'
-            }
-        )
-        
-        print(f"✓ Successfully uploaded to s3://{bucket_name}/{s3_key}")
-        
-        # Generate and print the public URL
-        public_url = f"https://{bucket_name}/{s3_key}"
-        print(f"Public URL: {public_url}")
-        
-        return True
-        
-    except ClientError as e:
-        print(f"✗ Error uploading to S3: {e}")
-        return False
-    except Exception as e:
-        print(f"✗ Unexpected error: {e}")
         return False
 
 

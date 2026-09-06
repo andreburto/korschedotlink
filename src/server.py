@@ -21,7 +21,7 @@ from litellm import api_key
 
 # Import from korsche_sync module
 from korsche_sync import (
-    generate_prompt,
+    # generate_prompt,
     enhance_prompt_with_gemini,
     generate_filename,
     generate_image
