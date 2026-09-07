@@ -10,7 +10,9 @@ REFS_DIR = Path("refs")
 PROMPT_BY_FILE_NAME = {
         "trad_wife": "homemaker",
         "workout": "fitness enthusiast",
+        "aerobic": "fitness enthusiast",
         "snoop": "snoop",
+        "casual": "snoop",
         "sexy_spy": "damsel in distress",
         "star_trek": "star trek fan",
         "army": "army",

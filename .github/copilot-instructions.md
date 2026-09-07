@@ -6,10 +6,11 @@
 2. Use PascalCase for class names.
 3. Use 4 spaces for indentation.
 4. Include docstrings for all functions and classes.
-5. Avoid using global variables; prefer passing parameters to functions.
+5. Avoid using global variables, except for constants; prefer passing parameters to functions.
 6. Use list comprehensions for creating lists when appropriate.
 7. Use DRY (Don't Repeat Yourself) principles to avoid code duplication.
-8. Follow PEP 8 style guidelines for Python code.
+8. Shared constants and functions go in the `utils.py` file.
+9. Follow PEP 8 style guidelines for Python code.
 
 ## .tf files
 

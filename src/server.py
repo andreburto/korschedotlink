@@ -4,8 +4,6 @@ Kirsche API Server
 
 Simple API server to handle managing Kirsche images and prompts.
 """
-
-import asyncio
 import json
 import mimetypes
 import os
@@ -17,7 +15,6 @@ from google.genai import types
 from google import genai
 from pathlib import Path
 from PIL import Image
-from litellm import api_key
 
 # Import from korsche_sync module
 from korsche_sync import (
