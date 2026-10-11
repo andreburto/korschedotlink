@@ -201,7 +201,7 @@ def main() -> None:
         prompt = generate_prompt(client)
         print(prompt)
         grok_client = xai_sdk.Client(api_key=xai_api_key)
-        output_path = generate_image(grok_client, prompt, orientation="portrait")
+        output_path = generate_image(grok_client, prompt, orientation="landscape")
         print(f"\nSaved image: {output_path}")
         trimmable_sides = check_trimmable_sides(client, output_path)
         print(f"Trimmable sides: {trimmable_sides}")
