@@ -106,9 +106,23 @@ def upload_to_s3(local_file_path, bucket_name, s3_key, aws_access_key, aws_secre
         )
         
         # Determine content type based on file extension
-        content_type = 'image/png'
-        if local_file_path.endswith('.ico'):
+        ext = local_file_path.split('.')[-1].lower()
+        if ext == 'ico':
             content_type = 'image/x-icon'
+        elif ext == 'json':
+            content_type = 'application/json'
+        elif ext in ['jpg', 'jpeg']:
+            content_type = 'image/jpeg'
+        elif ext == 'png':
+            content_type = 'image/png'
+        elif ext == 'gif':
+            content_type = 'image/gif'
+        elif ext == 'bmp':
+            content_type = 'image/bmp'
+        elif ext == 'webp':
+            content_type = 'image/webp'
+        else:
+            content_type = 'application/octet-stream'
         
         # Upload the file
         print(f"Uploading {local_file_path} to s3://{bucket_name}/{s3_key}")
