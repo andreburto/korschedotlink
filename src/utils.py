@@ -26,6 +26,26 @@ GROK_IMAGE_MODEL = "grok-imagine-image-quality"
 GEMINI_TEXT_MODEL = "gemini-2.5-flash"
 GEMINI_IMAGE_MODEL = "gemini-2.5-flash-image"
 
+FRAME_STYLES = (
+    "Marvel house 2000s",
+    "DC comics 1980s",
+    "Marvel comics 1960s",
+    "DC comics 1990s",
+    "American newspaper comics 1950s",
+    "European adventure comics 1970s",
+)
+
+FRAME_SETTINGS = (
+    "a rooftop garden overlooking a busy city at sunset",
+    "a quiet seaside cafe with open windows and wooden tables",
+    "a mountain observatory beneath a clear, star-filled sky",
+    "a sunlit workshop filled with tools and unfinished projects",
+    "a lantern-lit market square on a cool autumn evening",
+    "a cozy library with tall bookshelves and a crackling fireplace",
+    "a forest clearing beside a shallow, sparkling stream",
+    "a bustling train station with a large clock above the platforms",
+)
+
 
 def get_random_reference_image():
     """
