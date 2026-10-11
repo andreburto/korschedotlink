@@ -43,7 +43,7 @@ jobs:
           UPLOADER_S3_BUCKET: ${{ vars.UPLOADER_S3_BUCKET }}
 
       - name: List S3 objects
-        run: python src/lister.py ${{ vars.UPLOADER_S3_BUCKET }} frame/ "frame_" 
+        run: python src/lister.py ${{ vars.UPLOADER_S3_BUCKET }} frame "frame_" 
         env:
           UPLOADER_AWS_ACCESS_KEY: ${{ secrets.UPLOADER_AWS_ACCESS_KEY }}
           UPLOADER_AWS_SECRET_KEY: ${{ secrets.UPLOADER_AWS_SECRET_KEY }}
@@ -51,7 +51,7 @@ jobs:
 
       - name: Display index.json
         run: cat index.json
-        
+
       - name: Move index.json to frame directory
         run: mv index.json frame/index.json
 

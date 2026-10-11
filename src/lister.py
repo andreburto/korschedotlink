@@ -48,7 +48,7 @@ def main():
     if not all([aws_access_key, aws_secret_key]):
         raise ValueError("One or more required environment variables are not set")
 
-    keys = list_keys(f"{bucket}/{key}", prefix, aws_access_key, aws_secret_key)
+    keys = list_keys(bucket, f"{key}/{prefix}", aws_access_key, aws_secret_key)
 
     save_file = f"{os.path.curdir}/index.json"
     with open(save_file, "w") as f:
