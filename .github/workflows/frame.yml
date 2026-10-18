@@ -32,10 +32,10 @@ jobs:
         run: cat $(ls frame/frame_* | tail -n 1)
 
       - name: List generated images
-        run: ls frame/
+        run: ls frame/images
 
       - name: upload to s3
-        run: ls frame/ | xargs -I {} python src/upload.py frame/{}
+        run: ls frame/images | xargs -I {} python src/upload.py frame/images/{}
         env:
           AWS_REGION: 'us-east-1'
           UPLOADER_AWS_ACCESS_KEY: ${{ secrets.UPLOADER_AWS_ACCESS_KEY }}
