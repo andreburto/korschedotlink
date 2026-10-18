@@ -25,17 +25,20 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
 
+      - name: Empty frame directory
+        run: rm -rf frame/*
+
       - name: Move to frame directory
-        run: mv images frame
+        run: mv images/* frame/
 
       - name: Display files
-        run: cat $(ls frame/images/frame_* | tail -n 1)
+        run: cat $(ls frame/frame_* | tail -n 1)
 
       - name: List generated images
-        run: ls frame/images
+        run: ls frame/
 
       - name: upload to s3
-        run: ls frame/images | xargs -I {} python src/upload.py frame/{}
+        run: ls frame/ | xargs -I {} python src/upload.py frame/{}
         env:
           AWS_REGION: 'us-east-1'
           UPLOADER_AWS_ACCESS_KEY: ${{ secrets.UPLOADER_AWS_ACCESS_KEY }}
