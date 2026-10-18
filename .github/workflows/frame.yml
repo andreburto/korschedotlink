@@ -28,8 +28,8 @@ jobs:
       - name: Move to frame directory
         run: mv images frame
 
-      - name: Display logs
-        run: cat $(ls frame/frame_* | tail -n 1)
+      - name: Display files
+        run: cat $(ls frame/images/frame_* | tail -n 1)
 
       - name: List generated images
         run: ls frame/images
