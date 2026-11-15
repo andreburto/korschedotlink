@@ -23,14 +23,10 @@ from google import genai
 from google.genai import types
 
 from korsche_sync import enhance_prompt_with_gemini
-from prompt_maker import PROMPT_DATA, random_sample
-from utils import REFS_DIR, PROMPT_BY_FILE_NAME, get_random_reference_image
-
-# Model configurations
-GROK_TEXT_MODEL = "grok-4.5-latest"
-GROK_IMAGE_MODEL = "grok-imagine-image-quality"
-GEMINI_TEXT_MODEL = "gemini-2.5-flash"
-GEMINI_IMAGE_MODEL = "gemini-2.5-flash-image"
+from prompt_maker import PROMPT_DATA
+from utils import (GROK_IMAGE_MODEL, GROK_TEXT_MODEL, GEMINI_IMAGE_MODEL, GEMINI_TEXT_MODEL, 
+                   REFS_DIR, PROMPT_BY_FILE_NAME, get_random_reference_image, random_sample)
+    
 
 # Set up logging
 script_dir = Path(__file__).parent

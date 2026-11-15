@@ -58,7 +58,7 @@
 </head>
 <body>
     <h1 class="title-text">Welcome to Zombo-Korsche</h1>
-    <img src="kirsche_beach02.png" alt="Centered Image" class="centered-image">
+    <img src="kirsche_beach02.png" alt="Centered Image" class="centered-image" width="330" height="400" decoding="async">
     <div class="button-container">
         <button class="custom-button" onclick="window.location.href='https://korsche.link/bounce/index.html'">Korcshe Bounce</button>
         <button class="custom-button" onclick="window.location.href='https://korsche.link/kirsche/index.html'">Kirsche Gallery</button>
@@ -84,12 +84,14 @@
         const body = document.body;
         const colorChangeInterval = Math.floor(height / 3); // Change color every one-third of document height
         
-        // Create a 1px div for each pixel height
+        // Batch-create the 1px divs in a fragment so the body only reflows once
+        const fragment = document.createDocumentFragment();
         for (let i = 0; i < height; i++) {
             const pixel = document.createElement('div');
             pixel.className = 'pixel';
-            body.appendChild(pixel);
+            fragment.appendChild(pixel);
         }
+        body.appendChild(fragment);
         
         // Track current black pixel position
         const pixels = document.querySelectorAll('.pixel');
@@ -99,33 +101,41 @@
         let sClr = [];
         let eClr = getRandomColor();
         
-        // Move the black pixel down every 0.005 seconds
-        setInterval(() => {
-            // When counter is 0, generate new random color
-            if (counter === 0) {
-                sClr = getRandomColor();
-            }
+        // Move the black pixel down, paced to the browser's paint cycle instead of a fixed-rate
+        // timer, so this loop can never starve rendering (which was freezing the page on load).
+        let lastPixelStep = 0;
+        function stepPixels(timestamp) {
+            if (timestamp - lastPixelStep >= 5) {
+                lastPixelStep = timestamp;
 
-            for (let i = pixels.length - 1; i > 0; i--) {
-              pixels[i].style.backgroundColor = pixels[i - 1].style.backgroundColor;
-            }
+                // When counter is 0, generate new random color
+                if (counter === 0) {
+                    sClr = getRandomColor();
+                }
 
-            if (counter === 0) {
-                pixels[0].style.backgroundColor = `rgb(${eClr[0]}, ${eClr[1]}, ${eClr[2]})`;
-            } else {
-                const red = calculateGradient(eClr[0], sClr[0], counter, colorChangeInterval);
-                const green = calculateGradient(eClr[1], sClr[1], counter, colorChangeInterval);
-                const blue = calculateGradient(eClr[2], sClr[2], counter, colorChangeInterval);
-                pixels[0].style.backgroundColor = `rgb(${red}, ${green}, ${blue})`;
+                for (let i = pixels.length - 1; i > 0; i--) {
+                  pixels[i].style.backgroundColor = pixels[i - 1].style.backgroundColor;
+                }
+
+                if (counter === 0) {
+                    pixels[0].style.backgroundColor = `rgb(${eClr[0]}, ${eClr[1]}, ${eClr[2]})`;
+                } else {
+                    const red = calculateGradient(eClr[0], sClr[0], counter, colorChangeInterval);
+                    const green = calculateGradient(eClr[1], sClr[1], counter, colorChangeInterval);
+                    const blue = calculateGradient(eClr[2], sClr[2], counter, colorChangeInterval);
+                    pixels[0].style.backgroundColor = `rgb(${red}, ${green}, ${blue})`;
+                }
+                
+                // Increment counter and reset at colorChangeInterval
+                counter++;
+                if (counter >= colorChangeInterval) {
+                    counter = 0;
+                    eClr = sClr;
+                }
             }
-            
-            // Increment counter and reset at colorChangeInterval
-            counter++;
-            if (counter >= colorChangeInterval) {
-                counter = 0;
-                eClr = sClr;
-            }
-        }, 5);
+            requestAnimationFrame(stepPixels);
+        }
+        requestAnimationFrame(stepPixels);
 
         const titleText = document.querySelector('.title-text');
         const titleChars = titleText.textContent.split('');
@@ -140,21 +150,27 @@
             titleCharColors.push(charColor); // Start with white color for each character
         });
         const titleSpans = titleText.querySelectorAll('span');
-        setInterval(() => {
-            titleCharColors.forEach((color, index) => {
-                if (index < titleCharColors.length - 1) {
-                    titleCharColors[index] = titleCharColors[index + 1]; // Shift color from the next character
-                    const r = titleCharColors[index][0];
-                    const g = titleCharColors[index][1];
-                    const b = titleCharColors[index][2];
-                    titleSpans[index].style.color = `rgb(${r}, ${g}, ${b})`;
-                } else {
-                    const newColor = getRandomColor();
-                    titleCharColors[index] = newColor;
-                    titleSpans[index].style.color = `rgb(${newColor[0]}, ${newColor[1]}, ${newColor[2]})`;
-                }
-            });
-        }, 500);
+        let lastTitleStep = 0;
+        function stepTitle(timestamp) {
+            if (timestamp - lastTitleStep >= 500) {
+                lastTitleStep = timestamp;
+                titleCharColors.forEach((color, index) => {
+                    if (index < titleCharColors.length - 1) {
+                        titleCharColors[index] = titleCharColors[index + 1]; // Shift color from the next character
+                        const r = titleCharColors[index][0];
+                        const g = titleCharColors[index][1];
+                        const b = titleCharColors[index][2];
+                        titleSpans[index].style.color = `rgb(${r}, ${g}, ${b})`;
+                    } else {
+                        const newColor = getRandomColor();
+                        titleCharColors[index] = newColor;
+                        titleSpans[index].style.color = `rgb(${newColor[0]}, ${newColor[1]}, ${newColor[2]})`;
+                    }
+                });
+            }
+            requestAnimationFrame(stepTitle);
+        }
+        requestAnimationFrame(stepTitle);
     </script>
 </body>
 </html>

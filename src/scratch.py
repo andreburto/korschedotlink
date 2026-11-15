@@ -14,9 +14,10 @@ from time import sleep
 from google import genai
 from google.genai import types
 
-from korsche_sync import DEFAULT_GEMINI_IMAGE_MODEL, DEFAULT_GEMINI_PROMPT_MODEL, enhance_prompt_with_gemini
-from prompt_maker import PROMPT_DATA, random_sample
-from utils import REFS_DIR, PROMPT_BY_FILE_NAME, get_random_reference_image
+from korsche_sync import enhance_prompt_with_gemini
+from prompt_maker import PROMPT_DATA
+from utils import (GEMINI_IMAGE_MODEL, GEMINI_TEXT_MODEL, REFS_DIR, PROMPT_BY_FILE_NAME, 
+                   get_random_reference_image, random_sample)
 
 
 def generate_kirsche_image(reference_image_path, setting, pose):
@@ -52,14 +53,14 @@ def generate_kirsche_image(reference_image_path, setting, pose):
     
     # Generate the image
     response = client.models.generate_content(
-        model=DEFAULT_GEMINI_IMAGE_MODEL,
+        model=GEMINI_IMAGE_MODEL,
         contents=[
             types.Part.from_bytes(
                 data=reference_image_data,
                 mime_type=f"image/{str(reference_image_path).split('.')[-1].lower()}"
             ),
             enhance_prompt_with_gemini(
-                prompt, DEFAULT_GEMINI_PROMPT_MODEL, api_key)
+                prompt, GEMINI_TEXT_MODEL, api_key)
         ]
     )
     

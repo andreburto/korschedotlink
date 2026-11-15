@@ -30,12 +30,12 @@ description: 'Simple API server to handle managing Kirsche images.'
 10. `GET /details`: Return a JSON respose withe the keys from `PROMPT_DATA` dictionary in prompt_manager.py.
 11. `GET /details/{key}`: Return a JSON response with the dictionary corresponding to the specified key from the `PROMPT_DATA` dictionary in prompt_manager.py. If the key does not exist, return a 404 error.
 12. `GET /lazy`: Redirect to `lazy.html` in the static directory.
-13. `POST /lazy/generate`: Generate an enhanced prompt. It should take a JSON body with two fields: `reference_image` (the name of the image in the `refs` directory to use) and `prompt` (the prompt to enhance). The server should retrieve the reference image data based on the provided `reference_image` name, and then call Gemini with the image and the prompt using the GEMINI_PROMPT_MODEL, which will return an expanded prompt based on the image. The response should include the enhanced prompt in a field named `enhanced_prompt`.
+13. `POST /lazy/generate`: Generate an enhanced prompt. It should take a JSON body with two fields: `reference_image` (the name of the image in the `refs` directory to use) and `prompt` (the prompt to enhance). The server should retrieve the reference image data based on the provided `reference_image` name, and then call Gemini with the image and the prompt using the GEMINI_TEXT_MODEL, which will return an expanded prompt based on the image. The response should include the enhanced prompt in a field named `enhanced_prompt`.
 
 # Environment Variables
 
 1. `GEMINI_API_KEY`: The API key for accessing the Gemini service, used for enhancing prompts in the `/prompt/enhance` endpoint.
-2. `GEMINI_PROMPT_MODEL`: The specific Gemini model to use for enhancing prompts in the `/prompt/enhance` endpoint. If not set, it should default to `korsche_sync.DEFAULT_GEMINI_PROMPT_MODEL`.
+2. `GEMINI_TEXT_MODEL`: The specific Gemini model to use for enhancing prompts in the `/prompt/enhance` endpoint. If not set, it should default to `korsche_sync.DEFAULT_GEMINI_PROMPT_MODEL`.
 3. `IMAGE_DIR`: The directory where Kirsche images are stored. This should be used for retrieving images in the `/images` and `/images/{image_name}` endpoints.
 4. `THUMBNAIL_DIR`: The directory where generated thumbnail images are stored. This should be used for caching thumbnails generated in the `/images/{image_name}/thumbnail` endpoint.
 5. `STATIC_DIR`: The directory where static files are stored for the `/static/{filename}` endpoint.

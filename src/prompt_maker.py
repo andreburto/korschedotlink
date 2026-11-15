@@ -10,6 +10,8 @@ import sys
 
 from datetime import datetime
 
+from utils import random_sample
+
 
 # Prompt dictionary organized by category and subcategory
 PROMPT_DATA = {
@@ -336,18 +338,6 @@ point_of_views = [
     "fisheye lens effect",
     "macro perspective"
 ]
-
-
-def random_sample(item_list):
-    """
-    Return a random sample from the given list.
-
-    Args:
-        item_list (list): A list of items to sample from.
-    Returns:
-        A random item from the list.
-    """
-    return random.choice(random.sample(item_list, len(item_list)))
 
 
 def generate_prompt(prompt_category=None):

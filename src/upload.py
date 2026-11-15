@@ -1,7 +1,7 @@
 import os
 import sys
 
-from korsche_sync import upload_to_s3
+from utils import upload_to_s3
 
 
 def main():

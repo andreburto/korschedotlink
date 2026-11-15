@@ -8,7 +8,9 @@ on:
         required: false
         type: choice
         options:
+          - "aerobic"
           - "army"
+          - "casual"
           - "dance_club"
           - "maid"
           - "sexy_spy"

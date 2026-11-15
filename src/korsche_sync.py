@@ -12,18 +12,18 @@ Consolidated from:
 - list_models.py
 """
 
-import boto3
 import io
 import os
 import random
 import sys
 
-from botocore.exceptions import ClientError
 from datetime import datetime
 from google.genai import types
 from google import genai
 from PIL import Image
 from time import sleep
+
+from utils import GEMINI_IMAGE_MODEL, GEMINI_TEXT_MODEL, upload_to_s3
 
 # ==============================================================================
 # Constants and Configuration
@@ -167,8 +167,6 @@ emotions_elements = [
     "mysterious"
 ]
 
-DEFAULT_GEMINI_PROMPT_MODEL = "gemini-2.5-flash"
-DEFAULT_GEMINI_IMAGE_MODEL = "gemini-2.5-flash-image"
 DIVIDER = "=" * 60
 
 
@@ -244,7 +242,7 @@ def enhance_prompt_with_gemini(prompt, model, api_key):
 def make_new_prompt():
     """Generate, enhance, and return a new prompt."""
     # Setup Gemini model and API key
-    model = os.getenv("GEMINI_PROMPT_MODEL", DEFAULT_GEMINI_PROMPT_MODEL)
+    model = os.getenv("GEMINI_TEXT_MODEL", GEMINI_TEXT_MODEL)
     api_key = os.getenv("GEMINI_API_KEY")
     
     # Generate the base prompt
@@ -288,7 +286,7 @@ def generate_image(prompt: str, save_file: str = "images", api_key: str = None) 
     
     # Generate the image using Nano Banana model
     response = client.models.generate_content(
-        model=os.getenv("GEMINI_IMAGE_MODEL", DEFAULT_GEMINI_IMAGE_MODEL),
+        model=os.getenv("GEMINI_IMAGE_MODEL", GEMINI_IMAGE_MODEL),
         contents=prompt
     )
           
@@ -335,7 +333,7 @@ def send_to_gemini(image_path: str, api_key: str, prompt: str):
         image_data = f.read()
     
     response = client.models.generate_content(
-        model=os.getenv("GEMINI_IMAGE_MODEL", DEFAULT_GEMINI_IMAGE_MODEL),
+        model=os.getenv("GEMINI_IMAGE_MODEL", GEMINI_IMAGE_MODEL),
         contents=[
             prompt, 
             types.Part.from_bytes(data=image_data, mime_type="image/png")])
@@ -481,7 +479,7 @@ def favico(kirsche_description: str, output_dir: str = "images"):
     try:
         # Generate the image using Gemini
         response = client.models.generate_content(
-            model=os.getenv("GEMINI_IMAGE_MODEL", DEFAULT_GEMINI_IMAGE_MODEL),
+            model=os.getenv("GEMINI_IMAGE_MODEL", GEMINI_IMAGE_MODEL),
             contents=favicon_prompt
         )
 
@@ -544,64 +542,6 @@ def favico(kirsche_description: str, output_dir: str = "images"):
 
 
 # ==============================================================================
-# S3 Upload Functions
-# ==============================================================================
-def upload_to_s3(local_file_path, bucket_name, s3_key, aws_access_key, aws_secret_key):
-    """
-    Upload a file to an S3 bucket.
-    
-    Args:
-        local_file_path: Path to the local file to upload
-        bucket_name: Name of the S3 bucket
-        s3_key: S3 object key (path within the bucket)
-        aws_access_key: AWS access key ID
-        aws_secret_key: AWS secret access key
-    
-    Returns:
-        bool: True if upload was successful, False otherwise
-    """
-    try:
-        # Create S3 client with provided credentials
-        s3_client = boto3.client(
-            's3',
-            aws_access_key_id=aws_access_key,
-            aws_secret_access_key=aws_secret_key
-        )
-        
-        # Determine content type based on file extension
-        content_type = 'image/png'
-        if local_file_path.endswith('.ico'):
-            content_type = 'image/x-icon'
-        
-        # Upload the file
-        print(f"Uploading {local_file_path} to s3://{bucket_name}/{s3_key}")
-        s3_client.upload_file(
-            local_file_path,
-            bucket_name,
-            s3_key,
-            ExtraArgs={
-                'ContentType': content_type,
-                'ACL': 'public-read'
-            }
-        )
-        
-        print(f"✓ Successfully uploaded to s3://{bucket_name}/{s3_key}")
-        
-        # Generate and print the public URL
-        public_url = f"https://{bucket_name}/{s3_key}"
-        print(f"Public URL: {public_url}")
-        
-        return True
-        
-    except ClientError as e:
-        print(f"✗ Error uploading to S3: {e}")
-        return False
-    except Exception as e:
-        print(f"✗ Unexpected error: {e}")
-        return False
-
-
-# ==============================================================================
 # Main Orchestration
 # ==============================================================================
 def main():
@@ -634,7 +574,7 @@ def main():
             save_file = f"images/{generate_filename()}"
             enhanced_prompt = enhance_prompt_with_gemini(
                 ' '.join(sys.argv[2:]), 
-                model=os.getenv("GEMINI_PROMPT_MODEL", DEFAULT_GEMINI_PROMPT_MODEL), 
+                model=os.getenv("GEMINI_TEXT_MODEL", GEMINI_TEXT_MODEL), 
                 api_key=gemini_api_key)
             generate_image(
                 prompt=KIRSCHE_DESCRIPTION.format(enhanced_prompt),
