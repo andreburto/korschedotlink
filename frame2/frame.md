@@ -11,6 +11,7 @@ This is Golang application that does this following:
 5. Display the next image in the `index.json` file if the >>> button is pressed. If it's the last image, start at the first. Reset the `delay` countdown.
 6. Display the previous image in the `index.json` file if the <<< button is pressed. If it's the the first image, go to the last. Reset the `delay` countdown.
 7. Display a random image from `index.json` and reset the `delay` countdown when the RND button is pressed.
+8. Display a dialog when the image is clicked. The dialog contains the URL of the picture being displayed and has two buttons: "Copy to clipboard", which copies the URL to the native operating system clipboard, and "Close", which closes the dialog. The dialog must not interrupt the `delay` timer.
 
 The app should compile to a binary and run on modern desktops.
 

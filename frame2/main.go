@@ -32,6 +32,7 @@ type gorsche struct {
 	prevBtn *TButtonWidget
 	rndBtn  *TButtonWidget
 	nextBtn *TButtonWidget
+	dialog  *ToplevelWidget
 
 	index   int
 	photo   *Img
@@ -94,6 +95,8 @@ func (g *gorsche) buildUI() {
 	g.rndBtn = TButton(Txt("RND"), Command(g.navigateRandom))
 	g.nextBtn = TButton(Txt(">>>"), Command(func() { g.navigate(1) }))
 
+	Bind(g.display, "<Button-1>", Command(g.showImageURL))
+
 	Grid(g.display, Row(0), Column(0), Columnspan(3), Sticky("news"))
 	Grid(g.prevBtn, Row(1), Column(0), Sticky("we"), Ipady("2m"))
 	Grid(g.rndBtn, Row(1), Column(1), Sticky("we"), Ipady("2m"))
@@ -103,6 +106,47 @@ func (g *gorsche) buildUI() {
 	GridColumnConfigure(App, 0, Weight(1))
 	GridColumnConfigure(App, 1, Weight(1))
 	GridColumnConfigure(App, 2, Weight(1))
+}
+
+// showImageURL displays a dialog containing the URL of the current image,
+// with a "Copy to clipboard" button and a "Close" button. The dialog is a
+// regular Tk toplevel rather than a blocking MessageBox so the auto-cycle
+// ticker keeps running while it is open.
+func (g *gorsche) showImageURL() {
+	if g.dialog != nil {
+		return
+	}
+
+	url := imageURL(g.entries[g.index])
+	dlg := Toplevel()
+	g.dialog = dlg
+	dlg.WmTitle(appTitle)
+	WmTransient(dlg, App)
+
+	closeDialog := func() {
+		GrabRelease(dlg)
+		Destroy(dlg)
+		g.dialog = nil
+	}
+	WmProtocol(dlg.Window, "WM_DELETE_WINDOW", closeDialog)
+
+	// Tk's clipboard maps onto the native clipboard on Windows, macOS and X11.
+	copyURL := func() {
+		ClipboardClear()
+		ClipboardAppend(url)
+	}
+
+	msg := dlg.Label(Txt(url), Wraplength("8c"), Justify("center"))
+	buttons := dlg.Frame()
+	copyBtn := buttons.TButton(Txt("Copy to clipboard"), Command(copyURL))
+	closeBtn := buttons.TButton(Txt("Close"), Command(closeDialog))
+	Pack(msg, Padx("4m"), Pady("4m"))
+	Pack(buttons, Pady("2m"))
+	Pack(copyBtn, closeBtn, Side("left"), Padx("2m"))
+
+	dlg.Center()
+	GrabSet(dlg)
+	Focus(closeBtn)
 }
 
 // startAutoCycle starts a short-interval ticker that advances to the next

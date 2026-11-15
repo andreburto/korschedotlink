@@ -54,6 +54,10 @@ and begins cycling automatically.
 * `<<<` — show the previous image (wraps to the last image from the first).
 * `RND` — show a random image.
 * `>>>` — show the next image (wraps to the first image from the last).
+* Click the image — open a dialog showing the URL of the displayed picture.
+  Its `Copy to clipboard` button copies the URL to the system clipboard and
+  its `Close` button dismisses the dialog. The automatic cycling timer keeps
+  running while the dialog is open.
 
 ### Settings
 
