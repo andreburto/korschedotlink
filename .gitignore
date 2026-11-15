@@ -58,3 +58,8 @@ prompt.txt
 *.png
 *.jpg
 *.jpeg
+
+# Go (frame2/Gorsche)
+frame2/gorsche
+frame2/gorsche.exe
+frame2/settings.json
